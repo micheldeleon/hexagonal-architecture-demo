@@ -5,5 +5,5 @@ import java.util.List;
 import com.example.demo.core.domain.models.Tournament;
 
 public interface GetTournamentPort {
-    List<Tournament> getSubscribedTournaments(Long user);
+    List<Tournament> getSubscribedTournaments(String nationalId);
 }

@@ -11,7 +11,9 @@ import com.example.demo.adapters.out.persistence.jpa.interfaces.DisciplineReposi
 import com.example.demo.adapters.out.persistence.jpa.interfaces.FormatRepositoryJpa;
 import com.example.demo.adapters.out.persistence.jpa.interfaces.TournamentRepositoryJpa;
 import com.example.demo.adapters.out.persistence.jpa.mappers.TournamentMapper;
+import com.example.demo.core.domain.models.Team;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.ports.out.TeamLoaderPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 
 @Component
@@ -20,13 +22,16 @@ public class TournamentRepository implements TournamentRepositoryPort {
     private final TournamentRepositoryJpa tournamentRepositoryJpa;
     private final FormatRepositoryJpa formatRepositoryJpa;
     private final DisciplineRepositoryJpa disciplineRepositoryJpa;
+    private final TeamLoaderPort teamLoaderPort;
 
     public TournamentRepository(TournamentRepositoryJpa tournamentRepositoryJpa,
             FormatRepositoryJpa formatRepositoryJpa,
-            DisciplineRepositoryJpa disciplineRepositoryJpa) {
+            DisciplineRepositoryJpa disciplineRepositoryJpa,
+            TeamLoaderPort teamLoaderPort) {
         this.tournamentRepositoryJpa = tournamentRepositoryJpa;
         this.formatRepositoryJpa = formatRepositoryJpa;
         this.disciplineRepositoryJpa = disciplineRepositoryJpa;
+        this.teamLoaderPort = teamLoaderPort;
     }
 
     @Override
@@ -44,7 +49,9 @@ public class TournamentRepository implements TournamentRepositoryPort {
         }
         e.setOrganizerId(organizerId);
         return TournamentMapper.mapToDomain(e);
-    }    @Override
+    }
+
+    @Override
     public Tournament findById(Long id) {
         return tournamentRepositoryJpa.findById(id)
                 .map(TournamentMapper::mapToDomain)
@@ -57,6 +64,44 @@ public class TournamentRepository implements TournamentRepositoryPort {
         for (TournamentJpaEntity entity : tournamentRepositoryJpa.findAll()) {
             tournaments.add(TournamentMapper.mapToDomain(entity));
         }
+        return tournaments;
+    }
+    
+    @Override
+    public Tournament findByIdWithTeams(Long id) {
+        Tournament tournament = findById(id);
+        if (tournament != null && tournament.getId() != null) {
+            List<Team> teams = teamLoaderPort.loadTeamsByTournament(tournament.getId());
+            tournament.setTeams(teams);
+        }
+        return tournament;
+    }
+    
+    @Override
+    public List<Tournament> findAllWithTeams() {
+        List<Tournament> tournaments = findAll();
+        if (tournaments.isEmpty()) {
+            return tournaments;
+        }
+        
+        // Obtener todos los IDs de torneos
+        List<Long> tournamentIds = tournaments.stream()
+                .map(Tournament::getId)
+                .filter(id -> id != null)
+                .collect(java.util.stream.Collectors.toList());
+        
+        // Cargar todos los equipos en batch
+        java.util.Map<Long, List<Team>> teamsByTournament = 
+                teamLoaderPort.loadTeamsForMultipleTournaments(tournamentIds);
+        
+        // Asignar equipos a cada torneo
+        for (Tournament tournament : tournaments) {
+            if (tournament.getId() != null) {
+                List<Team> teams = teamsByTournament.getOrDefault(tournament.getId(), new ArrayList<>());
+                tournament.setTeams(teams);
+            }
+        }
+        
         return tournaments;
     }
 
