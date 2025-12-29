@@ -24,5 +24,6 @@ public record TournamentResponse(
     int maxParticipantsPerTournament,
     int teamsInscribed,
     Long organizerId,
-    String status
+    String status,
+    String password
 ) {}
