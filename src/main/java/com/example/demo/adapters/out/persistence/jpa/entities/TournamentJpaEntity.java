@@ -89,4 +89,7 @@ public class TournamentJpaEntity {
 
   @Column(name = "is_double_round")
   private Boolean isDoubleRound;
+
+  @Column(name = "detalles", columnDefinition = "TEXT")
+  private String detalles;
 }

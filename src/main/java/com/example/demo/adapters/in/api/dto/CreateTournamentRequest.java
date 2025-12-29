@@ -26,5 +26,6 @@ public record CreateTournamentRequest(
     @PositiveOrZero int maxParticipantsPerTournament,
     String prize,
     @PositiveOrZero double registrationCost,
-    Boolean isDoubleRound // Para formato liga: indica si es a doble ronda (ida y vuelta)
+    Boolean isDoubleRound, // Para formato liga: indica si es a doble ronda (ida y vuelta)
+    String detalles // Información detallada del torneo
 ) {}

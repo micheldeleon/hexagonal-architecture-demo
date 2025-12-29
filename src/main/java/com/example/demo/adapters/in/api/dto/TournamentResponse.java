@@ -25,5 +25,6 @@ public record TournamentResponse(
     int teamsInscribed,
     Long organizerId,
     String status,
-    String password
+    String password,
+    String detalles
 ) {}
