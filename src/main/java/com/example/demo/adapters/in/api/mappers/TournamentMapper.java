@@ -65,7 +65,8 @@ public class TournamentMapper {
                 t.getOrganizer().getId(),
                 t.getStatus().toString(),
                 t.getPassword(),
-                t.getDetalles()
+                t.getDetalles(),
+                t.getTeams()
         );
     }
 }
