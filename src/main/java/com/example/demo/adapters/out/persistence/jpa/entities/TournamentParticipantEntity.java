@@ -1,4 +1,4 @@
-﻿package com.example.demo.adapters.out.persistence.jpa.entities;
+package com.example.demo.adapters.out.persistence.jpa.entities;
 
 import java.time.OffsetDateTime;
 
@@ -37,3 +37,4 @@ public class TournamentParticipantEntity {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 }
+

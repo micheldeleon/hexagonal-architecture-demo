@@ -12,10 +12,15 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    @Value("${security.jwt.secret}")
+    @Value("${security.jwt.secret:${JWT_SECRET:}}")
     private String jwtSecret;
 
+    private static final String FALLBACK_SECRET = "change-me-super-long-secret-key-32chars!!";
+
     public SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        String secretToUse = (jwtSecret != null && jwtSecret.length() >= 32)
+                ? jwtSecret
+                : FALLBACK_SECRET;
+        return Keys.hmacShaKeyFor(secretToUse.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -1,4 +1,4 @@
-﻿package com.example.demo.adapters.out.persistence.jpa.repositories;
+package com.example.demo.adapters.out.persistence.jpa.repositories;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -32,3 +32,4 @@ public class TournamentRegistrationRepository implements TournamentRegistrationP
         return tournamentParticipantRepositoryJpa.existsByTournamentIdAndUserId(tournamentId, userId);
     }
 }
+

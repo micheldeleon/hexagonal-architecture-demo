@@ -1,4 +1,4 @@
-﻿package com.example.demo.adapters.out.persistence.jpa.mappers;
+package com.example.demo.adapters.out.persistence.jpa.mappers;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -110,3 +110,4 @@ public class TournamentMapper {
         return (odt == null) ? null : Date.from(odt.toInstant());
     }
 }
+

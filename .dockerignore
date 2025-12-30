@@ -1,0 +1,15 @@
+# Build artefacts
+target
+
+# VCS
+.git
+.gitignore
+
+# Node / misc
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Env / secrets
+.env
+.env.local

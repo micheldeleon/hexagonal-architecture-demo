@@ -1,4 +1,4 @@
-﻿package com.example.demo.core.ports.out;
+package com.example.demo.core.ports.out;
 
 public interface TournamentRegistrationPort {
     void register(Long tournamentId, Long userId);

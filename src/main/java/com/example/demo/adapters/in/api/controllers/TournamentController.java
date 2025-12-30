@@ -1,4 +1,4 @@
-﻿package com.example.demo.adapters.in.api.controllers;
+package com.example.demo.adapters.in.api.controllers;
 
 import java.util.Date;
 import java.util.List;
@@ -432,3 +432,4 @@ public class TournamentController {
         }
     }
 }
+

@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
+@ConditionalOnProperty(name = "mailjet.enabled", havingValue = "true")
 public class MailjetEmailAdapter implements EmailSenderPort {
 
     private static final Logger log = LoggerFactory.getLogger(MailjetEmailAdapter.class);

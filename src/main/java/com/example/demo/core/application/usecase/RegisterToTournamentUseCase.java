@@ -1,4 +1,4 @@
-﻿package com.example.demo.core.application.usecase;
+package com.example.demo.core.application.usecase;
 
 import java.util.Date;
 
