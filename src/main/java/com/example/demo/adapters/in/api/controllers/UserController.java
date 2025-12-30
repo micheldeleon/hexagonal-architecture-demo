@@ -24,6 +24,8 @@ import com.example.demo.core.ports.in.ListUsersPort;
 import com.example.demo.core.ports.in.RegisterUserPort;
 import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
+import com.example.demo.core.ports.in.GetAllTournamentsPort;
+import com.example.demo.core.ports.in.GetTournamentPort;
 
 import jakarta.validation.Valid;
 
@@ -37,15 +39,19 @@ public class UserController {
     private final GetUserByIdAndEmailPort getUserByIdAndEmailPort;
     private final GetUserByIdPort getUserByIdPort;
     private final ToOrganizerPort toOrganizerPort;
+    private final GetAllTournamentsPort getAllTournamentsPort;
+    private final GetTournamentPort getTournamentPort;
     public UserController(ListUsersPort listUsersPort, RegisterUserPort registerUserPort,
             UpdateProfilePort updateProfilePort, GetUserByIdAndEmailPort getUserPort, GetUserByIdPort getUserByIdPort,
-            ToOrganizerPort toOrganizerPort) {
+            ToOrganizerPort toOrganizerPort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort) {
         this.listUsersPort = listUsersPort;
         this.registerUserPort = registerUserPort;
         this.updateProfilePort = updateProfilePort;
         this.getUserByIdAndEmailPort = getUserPort;
         this.getUserByIdPort = getUserByIdPort;
         this.toOrganizerPort = toOrganizerPort;
+        this.getAllTournamentsPort = getAllTournamentsPort;
+        this.getTournamentPort = getTournamentPort;
     }
 
     @GetMapping
@@ -102,13 +108,40 @@ public class UserController {
     }
     
 
+    @GetMapping(value = "/tournaments/organized", params = {"id", "email"})
+    public ResponseEntity<?> getTournamentsOrganizedByUserIdandEmail(
+            @RequestParam Long id,
+            @RequestParam String email) {
+        try {
+            // Verificar que el usuario existe
+            User user = getUserByIdAndEmailPort.getUserByIdAndEmail(id, email);
+            
+            // Obtener todos los torneos y filtrar por organizador
+            List<Tournament> allTournaments = getAllTournamentsPort.getAllTournaments();
+            List<Tournament> userTournaments = allTournaments.stream()
+                    .filter(tournament -> tournament.getOrganizer() != null && 
+                            tournament.getOrganizer().getId() != null &&
+                            tournament.getOrganizer().getId().equals(user.getId()))
+                    .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(userTournaments);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @GetMapping(value = "/tournaments", params = {"id", "email"})
     public ResponseEntity<?> getTournamentsByUserIdandEmail(
             @RequestParam Long id,
-            @RequestParam String Email) {
+            @RequestParam String email) {
         try {
-            List<Tournament> tournaments = this.getUserByIdAndEmailPort.getUserByIdAndEmail(id, Email).getTournaments();
-            return ResponseEntity.ok(tournaments);
+            // Verificar que el usuario existe
+            User user = getUserByIdAndEmailPort.getUserByIdAndEmail(id, email);
+            
+            // Obtener torneos donde el usuario está inscrito como participante
+            List<Tournament> subscribedTournaments = getTournamentPort.getSubscribedTournaments(user.getNationalId());
+            
+            return ResponseEntity.ok(subscribedTournaments);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -12,4 +12,17 @@ public interface TournamentRepositoryPort {
     Tournament findById(Long id);
 
     List<Tournament> findAll();
+    
+    /**
+     * Obtiene un torneo por ID con sus equipos y participantes cargados
+     * @param id ID del torneo
+     * @return Tournament con equipos cargados
+     */
+    Tournament findByIdWithTeams(Long id);
+    
+    /**
+     * Obtiene todos los torneos con sus equipos y participantes cargados
+     * @return Lista de torneos con equipos cargados
+     */
+    List<Tournament> findAllWithTeams();
 }

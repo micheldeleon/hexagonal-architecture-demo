@@ -55,6 +55,7 @@ public class TournamentMapper {
         e.setStatus(t.getStatus() != null ? t.getStatus().name() : null);
         e.setTeamsInscribed(t.getTeamsInscribed());
         e.setIsDoubleRound(t.getIsDoubleRound());
+        e.setDetalles(t.getDetalles());
 
         return e;
     }
@@ -98,6 +99,7 @@ public class TournamentMapper {
         tournament.setTeamsInscribed(
                 entity.getTeamsInscribed() != null ? entity.getTeamsInscribed() : 0);
         tournament.setIsDoubleRound(entity.getIsDoubleRound());
+        tournament.setDetalles(entity.getDetalles());
 
         return tournament;
     }

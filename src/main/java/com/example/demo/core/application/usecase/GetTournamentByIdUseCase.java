@@ -15,7 +15,7 @@ public class GetTournamentByIdUseCase implements GetTournamentByIdPort{
 
     @Override
     public Tournament getTournamentById(Long id) {
-        return tournamentRepository.findById(id);
+        return tournamentRepository.findByIdWithTeams(id);
     }
 
     

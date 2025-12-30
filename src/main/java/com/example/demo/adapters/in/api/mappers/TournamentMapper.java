@@ -38,7 +38,8 @@ public class TournamentMapper {
                 r.minParticipantsPerTournament(), // minParticipantsPerTournament
                 r.maxParticipantsPerTournament(), // maxParticipantsPerTournament
                 null, // status
-                r.isDoubleRound() // isDoubleRound
+                r.isDoubleRound(), // isDoubleRound
+                r.detalles() // detalles
         );
     }
 
@@ -62,7 +63,10 @@ public class TournamentMapper {
                 t.getMaxParticipantsPerTournament(),
                 t.getTeamsInscribed(),
                 t.getOrganizer().getId(),
-                t.getStatus().toString()
+                t.getStatus().toString(),
+                t.getPassword(),
+                t.getDetalles(),
+                t.getTeams()
         );
     }
 }

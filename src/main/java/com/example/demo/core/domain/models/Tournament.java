@@ -35,6 +35,7 @@ public class Tournament { // Torneo
     private int maxParticipantsPerTournament; // cantMaxParticipantesXTorneo
     private TournamentStatus status; // estado
     private Boolean isDoubleRound; // Para formato liga: indica si es a doble ronda (ida y vuelta)
+    private String detalles; // detalles del torneo con toda la información
     // Factory principal para crear torneos sanos
 
     public static Tournament create(Tournament t) {
@@ -89,9 +90,27 @@ public boolean isParticipant(Long userId) {
             }
         }
         return false; // no estuvo en ningún equipo
-    } else {
-        throw new IllegalArgumentException("No hay participantes");
     }
+    return false; // no hay equipos
+}
+
+/**
+ * Verifica si una persona con el nationalId dado participa en este torneo
+ * @param nationalId Cédula de identidad del participante
+ * @return true si participa en algún equipo, false en caso contrario
+ */
+public boolean isParticipantByNationalId(String nationalId) {
+    if (nationalId == null || nationalId.isBlank()) {
+        return false;
+    }
+    if (this.teams != null && !this.teams.isEmpty()) {
+        for (Team team : teams) {
+            if (team.hasParticipantWithNationalId(nationalId)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 }

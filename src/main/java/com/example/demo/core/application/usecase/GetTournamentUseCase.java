@@ -15,14 +15,15 @@ public class GetTournamentUseCase implements GetTournamentPort {
     }
 
     @Override
-    public List<Tournament> getSubscribedTournaments(Long userId) {
-        List<Tournament> tournaments = tournamentRepositoryPort.findAll();
+    public List<Tournament> getSubscribedTournaments(String nationalId) {
+        // Usar findAllWithTeams porque necesitamos los equipos para isParticipantByNationalId()
+        List<Tournament> tournaments = tournamentRepositoryPort.findAllWithTeams();
         if (tournaments == null) {
             throw new IllegalArgumentException("No hay torneos");
         }
         return tournaments
                 .stream()
-                .filter(t -> t.isParticipant(userId))
+                .filter(t -> t.isParticipantByNationalId(nationalId))
                 .toList();
     }
 }
