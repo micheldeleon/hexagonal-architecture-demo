@@ -30,9 +30,13 @@ import com.example.demo.core.application.usecase.GetLeagueStandingsUseCase;
 import com.example.demo.core.application.usecase.UpdateUserUseCase;
 import com.example.demo.core.application.usecase.CancelTournamentUseCase;
 import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase;
+import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
+import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
+import com.example.demo.core.ports.in.GetUserNotificationsPort;
+import com.example.demo.core.ports.in.MarkNotificationAsReadPort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
 import com.example.demo.core.ports.in.GetTournamentPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
@@ -64,6 +68,7 @@ import com.example.demo.core.ports.out.TeamQueryPort;
 import com.example.demo.core.ports.out.RaceResultPersistencePort;
 import com.example.demo.core.ports.out.TeamRegistrationPort;
 import com.example.demo.core.ports.out.TeamRemovalPort;
+import com.example.demo.core.ports.out.NotificationPort;
 import com.example.demo.core.ports.out.TournamentRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
@@ -151,14 +156,6 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public CancelTournamentPort cancelTournamentPort(
-            TournamentRepositoryPort tournamentRepositoryPort,
-            TournamentCleanupPort tournamentCleanupPort,
-            UserRepositoryPort userRepositoryPort) {
-        return new CancelTournamentUseCase(tournamentRepositoryPort, tournamentCleanupPort, userRepositoryPort);
-    }
-
-    @Bean
     public RegisterRunnerToTournamentPort registerRunnerToTournamentPort(
             TournamentRepositoryPort tournamentRepositoryPort,
             TeamRegistrationPort teamRegistrationPort,
@@ -225,8 +222,28 @@ public class ApplicationConfig {
     @Bean
     public RemoveTeamFromTournamentPort removeTeamFromTournamentPort(
             TournamentRepositoryPort tournamentRepositoryPort,
-            TeamRemovalPort teamRemovalPort) {
-        return new RemoveTeamFromTournamentUseCase(tournamentRepositoryPort, teamRemovalPort);
+            TeamRemovalPort teamRemovalPort,
+            NotificationPort notificationPort) {
+        return new RemoveTeamFromTournamentUseCase(tournamentRepositoryPort, teamRemovalPort, notificationPort);
+    }
+
+    @Bean
+    public GetUserNotificationsPort getUserNotificationsPort(NotificationPort notificationPort) {
+        return new GetUserNotificationsUseCase(notificationPort);
+    }
+
+    @Bean
+    public MarkNotificationAsReadPort markNotificationAsReadPort(NotificationPort notificationPort) {
+        return new MarkNotificationAsReadUseCase(notificationPort);
+    }
+
+    @Bean
+    public CancelTournamentPort cancelTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            TournamentCleanupPort tournamentCleanupPort,
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort) {
+        return new CancelTournamentUseCase(tournamentRepositoryPort, tournamentCleanupPort, userRepositoryPort, notificationPort);
     }
 }
 

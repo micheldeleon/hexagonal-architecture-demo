@@ -5,24 +5,29 @@ import java.util.Date;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.User;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.out.TournamentCleanupPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 
 public class CancelTournamentUseCase implements CancelTournamentPort {
 
     private final TournamentRepositoryPort tournamentRepositoryPort;
     private final TournamentCleanupPort tournamentCleanupPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final NotificationPort notificationPort;
 
     public CancelTournamentUseCase(
             TournamentRepositoryPort tournamentRepositoryPort,
             TournamentCleanupPort tournamentCleanupPort,
-            UserRepositoryPort userRepositoryPort) {
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort) {
         this.tournamentRepositoryPort = tournamentRepositoryPort;
         this.tournamentCleanupPort = tournamentCleanupPort;
         this.userRepositoryPort = userRepositoryPort;
+        this.notificationPort = notificationPort;
     }
 
     @Override
@@ -60,6 +65,17 @@ public class CancelTournamentUseCase implements CancelTournamentPort {
 
         Date canceledAt = new Date();
         tournamentRepositoryPort.update(tournament);
+
+        // Enviar notificaciones a todos los participantes del torneo
+        String notificationTitle = "Torneo Cancelado";
+        String notificationMessage = "El torneo '" + tournament.getName() + "' ha sido cancelado por el organizador.";
+        
+        try {
+            notificationPort.notifyUsersOfTournament(tournamentId, notificationTitle, notificationMessage, NotificationType.TOURNAMENT_CANCELED);
+        } catch (Exception e) {
+            // Log the error but don't fail the operation
+            System.err.println("Error enviando notificaciones: " + e.getMessage());
+        }
 
         //Retorna el metodo con los datos de la cancelación que habia definido en la interfaz para mostrar el resultado.
         return new CancelTournamentResult(tournamentId, user.getName(), canceledAt);

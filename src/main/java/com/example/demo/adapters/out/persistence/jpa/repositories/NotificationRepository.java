@@ -1,0 +1,185 @@
+package com.example.demo.adapters.out.persistence.jpa.repositories;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.example.demo.adapters.out.persistence.jpa.entities.NotificationEntity;
+import com.example.demo.adapters.out.persistence.jpa.entities.UserEntity;
+import com.example.demo.core.domain.models.Notification;
+import com.example.demo.core.domain.models.NotificationType;
+import com.example.demo.core.ports.out.NotificationPort;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
+@Component
+public class NotificationRepository implements NotificationPort {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Override
+    @Transactional
+    public Notification save(Notification notification) {
+        UserEntity userEntity = entityManager.find(UserEntity.class, notification.getUserId());
+        if (userEntity == null) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+
+        NotificationEntity entity = new NotificationEntity();
+        entity.setUser(userEntity);
+        entity.setType(notification.getType());
+        entity.setTitle(notification.getTitle());
+        entity.setMessage(notification.getMessage());
+        entity.setRelatedEntityId(notification.getRelatedEntityId());
+        entity.setRead(notification.isRead());
+        entity.setCreatedAt(notification.getCreatedAt() != null ? notification.getCreatedAt() : new Date());
+        entity.setReadAt(notification.getReadAt());
+
+        entityManager.persist(entity);
+        entityManager.flush();
+
+        return toModel(entity);
+    }
+
+    @Override
+    public List<Notification> findByUserId(Long userId) {
+        return entityManager
+                .createQuery("SELECT n FROM NotificationEntity n WHERE n.user.id = :userId ORDER BY n.createdAt DESC",
+                        NotificationEntity.class)
+                .setParameter("userId", userId)
+                .getResultList()
+                .stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Notification> findUnreadByUserId(Long userId) {
+        return entityManager
+                .createQuery(
+                        "SELECT n FROM NotificationEntity n WHERE n.user.id = :userId AND n.isRead = false ORDER BY n.createdAt DESC",
+                        NotificationEntity.class)
+                .setParameter("userId", userId)
+                .getResultList()
+                .stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Notification findById(Long id) {
+        NotificationEntity entity = entityManager.find(NotificationEntity.class, id);
+        return entity != null ? toModel(entity) : null;
+    }
+
+    @Override
+    @Transactional
+    public void markAsRead(Long notificationId) {
+        NotificationEntity entity = entityManager.find(NotificationEntity.class, notificationId);
+        if (entity != null && !entity.isRead()) {
+            entity.setRead(true);
+            entity.setReadAt(new Date());
+            entityManager.merge(entity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        entityManager
+                .createQuery("UPDATE NotificationEntity n SET n.isRead = true, n.readAt = :readAt WHERE n.user.id = :userId AND n.isRead = false")
+                .setParameter("userId", userId)
+                .setParameter("readAt", new Date())
+                .executeUpdate();
+    }
+
+    @Override
+    public int countUnreadByUserId(Long userId) {
+        Long count = entityManager
+                .createQuery("SELECT COUNT(n) FROM NotificationEntity n WHERE n.user.id = :userId AND n.isRead = false",
+                        Long.class)
+                .setParameter("userId", userId)
+                .getSingleResult();
+        return count.intValue();
+    }
+
+    @Override
+    @Transactional
+    public void notifyUsersOfTournament(Long tournamentId, String title, String message, NotificationType type) {
+        // Obtener todos los participantes del torneo a través de los equipos
+        List<Long> userIds = entityManager
+                .createQuery(
+                        "SELECT DISTINCT p.userId FROM TeamParticipantEntity tp " +
+                        "JOIN tp.team t " +
+                        "JOIN TournamentTeamEntity tt ON tt.teamId = t.id " +
+                        "JOIN ParticipantEntity p ON p.id = tp.participant.id " +
+                        "WHERE tt.tournamentId = :tournamentId",
+                        Long.class)
+                .setParameter("tournamentId", tournamentId)
+                .getResultList();
+
+        // Crear notificación para cada participante
+        for (Long userId : userIds) {
+            UserEntity user = entityManager.find(UserEntity.class, userId);
+            if (user != null) {
+                NotificationEntity notification = new NotificationEntity();
+                notification.setUser(user);
+                notification.setType(type);
+                notification.setTitle(title);
+                notification.setMessage(message);
+                notification.setRelatedEntityId(tournamentId);
+                notification.setRead(false);
+                notification.setCreatedAt(new Date());
+                entityManager.persist(notification);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void notifyTeamMembers(Long teamId, String title, String message, NotificationType type) {
+        // Obtener todos los IDs de usuarios del equipo
+        List<Long> userIds = entityManager
+                .createQuery(
+                        "SELECT p.userId FROM TeamParticipantEntity tp " +
+                        "JOIN ParticipantEntity p ON p.id = tp.participant.id " +
+                        "WHERE tp.team.id = :teamId",
+                        Long.class)
+                .setParameter("teamId", teamId)
+                .getResultList();
+
+        // Crear notificación para cada miembro
+        for (Long userId : userIds) {
+            UserEntity user = entityManager.find(UserEntity.class, userId);
+            if (user != null) {
+                NotificationEntity notification = new NotificationEntity();
+                notification.setUser(user);
+                notification.setType(type);
+                notification.setTitle(title);
+                notification.setMessage(message);
+                notification.setRelatedEntityId(teamId);
+                notification.setRead(false);
+                notification.setCreatedAt(new Date());
+                entityManager.persist(notification);
+            }
+        }
+    }
+
+    private Notification toModel(NotificationEntity entity) {
+        return new Notification(
+                entity.getId(),
+                entity.getUser().getId(),
+                entity.getType(),
+                entity.getTitle(),
+                entity.getMessage(),
+                entity.getRelatedEntityId(),
+                entity.isRead(),
+                entity.getCreatedAt(),
+                entity.getReadAt());
+    }
+}
