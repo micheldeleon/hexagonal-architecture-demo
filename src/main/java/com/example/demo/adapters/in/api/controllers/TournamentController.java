@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.adapters.in.api.dto.CreateTournamentRequest;
 import com.example.demo.adapters.in.api.dto.RegisterToTournamentRequest;
+import com.example.demo.adapters.in.api.dto.RemoveTeamFromTournamentRequest;
 import com.example.demo.adapters.in.api.dto.RunnerRegistrationRequest;
 import com.example.demo.adapters.in.api.dto.TournamentResponse;
 import com.example.demo.adapters.in.api.dto.TournamentSummaryResponse;
@@ -46,6 +47,7 @@ import com.example.demo.core.ports.in.ListTournamentsByStatusPort;
 import com.example.demo.core.ports.in.RegisterToTournamentPort;
 import com.example.demo.core.ports.in.RegisterRunnerToTournamentPort;
 import com.example.demo.core.ports.in.RegisterTeamToTournamentPort;
+import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
 import com.example.demo.core.ports.in.ReportMatchResultPort;
 import com.example.demo.core.ports.in.ReportRaceResultsPort;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
@@ -77,6 +79,7 @@ public class TournamentController {
     private final GetRaceResultsPort getRaceResultsPort;
     private final GetLeagueStandingsPort getLeagueStandingsPort;
     private final CancelTournamentPort cancelTournamentPort;
+    private final RemoveTeamFromTournamentPort removeTeamFromTournamentPort;
     private final TeamQueryPort teamQueryPort;
 
     public TournamentController(CreateTournamentPort createTournamentPort,
@@ -96,6 +99,7 @@ public class TournamentController {
             GetRaceResultsPort getRaceResultsPort,
             GetLeagueStandingsPort getLeagueStandingsPort,
             CancelTournamentPort cancelTournamentPort,
+            RemoveTeamFromTournamentPort removeTeamFromTournamentPort,
             TeamQueryPort teamQueryPort) {
         this.createTournamentPort = createTournamentPort;
         this.getAllTournamentsPort = getAllTournamentsPort;
@@ -113,6 +117,7 @@ public class TournamentController {
         this.reportRaceResultsPort = reportRaceResultsPort;
         this.getRaceResultsPort = getRaceResultsPort;
         this.getLeagueStandingsPort = getLeagueStandingsPort;
+        this.removeTeamFromTournamentPort = removeTeamFromTournamentPort;
         this.cancelTournamentPort = cancelTournamentPort;
         this.teamQueryPort = teamQueryPort;
     }
@@ -425,6 +430,28 @@ public class TournamentController {
                             s.points()))
                     .toList();
             return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{tournamentId}/remove-team")
+    public ResponseEntity<?> removeTeamFromTournament(
+            @PathVariable Long tournamentId,
+            @Valid @RequestBody RemoveTeamFromTournamentRequest request) {
+        try {
+            removeTeamFromTournamentPort.removeTeam(
+                    tournamentId,
+                    request.organizerId(),
+                    request.teamId(),
+                    request.comment());
+            return ResponseEntity.ok(Map.of(
+                    "message", "Equipo eliminado del torneo correctamente",
+                    "tournamentId", tournamentId,
+                    "teamId", request.teamId(),
+                    "organizerId", request.organizerId()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {

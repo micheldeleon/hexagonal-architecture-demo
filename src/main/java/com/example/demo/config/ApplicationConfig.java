@@ -29,8 +29,10 @@ import com.example.demo.core.application.usecase.ReportMatchResultUseCase;
 import com.example.demo.core.application.usecase.GetLeagueStandingsUseCase;
 import com.example.demo.core.application.usecase.UpdateUserUseCase;
 import com.example.demo.core.application.usecase.CancelTournamentUseCase;
+import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
+import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
 import com.example.demo.core.ports.in.GetTournamentPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
@@ -61,6 +63,7 @@ import com.example.demo.core.ports.out.FixturePersistencePort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 import com.example.demo.core.ports.out.RaceResultPersistencePort;
 import com.example.demo.core.ports.out.TeamRegistrationPort;
+import com.example.demo.core.ports.out.TeamRemovalPort;
 import com.example.demo.core.ports.out.TournamentRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
@@ -217,6 +220,13 @@ public class ApplicationConfig {
     @Bean
     public ToOrganizerPort ToOrganizerPort(UserRepositoryPort userRepositoryPort) {
         return new ToOrganizerUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public RemoveTeamFromTournamentPort removeTeamFromTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            TeamRemovalPort teamRemovalPort) {
+        return new RemoveTeamFromTournamentUseCase(tournamentRepositoryPort, teamRemovalPort);
     }
 }
 
