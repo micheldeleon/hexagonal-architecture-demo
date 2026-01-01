@@ -32,11 +32,13 @@ import com.example.demo.core.application.usecase.CancelTournamentUseCase;
 import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase;
 import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
 import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
+import com.example.demo.core.application.usecase.CreateNotificationUseCase;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
 import com.example.demo.core.ports.in.GetUserNotificationsPort;
 import com.example.demo.core.ports.in.MarkNotificationAsReadPort;
+import com.example.demo.core.ports.in.CreateNotificationPort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
 import com.example.demo.core.ports.in.GetTournamentPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
@@ -235,6 +237,11 @@ public class ApplicationConfig {
     @Bean
     public MarkNotificationAsReadPort markNotificationAsReadPort(NotificationPort notificationPort) {
         return new MarkNotificationAsReadUseCase(notificationPort);
+    }
+
+    @Bean
+    public CreateNotificationPort createNotificationPort(NotificationPort notificationPort) {
+        return new CreateNotificationUseCase(notificationPort);
     }
 
     @Bean

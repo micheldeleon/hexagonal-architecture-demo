@@ -3,21 +3,28 @@ package com.example.demo.adapters.in.api.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.adapters.in.api.dto.CreateNotificationRequest;
 import com.example.demo.adapters.in.api.dto.NotificationDTO;
 import com.example.demo.adapters.in.api.dto.NotificationResponse;
 import com.example.demo.core.domain.models.Notification;
 import com.example.demo.core.domain.models.User;
+import com.example.demo.core.ports.in.CreateNotificationPort;
 import com.example.demo.core.ports.in.GetUserNotificationsPort;
 import com.example.demo.core.ports.in.MarkNotificationAsReadPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -25,14 +32,17 @@ public class NotificationController {
 
     private final GetUserNotificationsPort getUserNotificationsPort;
     private final MarkNotificationAsReadPort markNotificationAsReadPort;
+    private final CreateNotificationPort createNotificationPort;
     private final UserRepositoryPort userRepositoryPort;
 
     public NotificationController(
             GetUserNotificationsPort getUserNotificationsPort,
             MarkNotificationAsReadPort markNotificationAsReadPort,
+            CreateNotificationPort createNotificationPort,
             UserRepositoryPort userRepositoryPort) {
         this.getUserNotificationsPort = getUserNotificationsPort;
         this.markNotificationAsReadPort = markNotificationAsReadPort;
+        this.createNotificationPort = createNotificationPort;
         this.userRepositoryPort = userRepositoryPort;
     }
 
@@ -97,6 +107,24 @@ public class NotificationController {
 
         markNotificationAsReadPort.markAllAsRead(user.getId());
         return ResponseEntity.ok("Todas las notificaciones marcadas como leídas");
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createNotification(
+            @Valid @RequestBody CreateNotificationRequest request) {
+        try {
+            Notification notification = createNotificationPort.createNotification(
+                    request.getUserId(),
+                    request.getType(),
+                    request.getTitle(),
+                    request.getMessage(),
+                    request.getRelatedEntityId()
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(toDTO(notification));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     private NotificationDTO toDTO(Notification notification) {
