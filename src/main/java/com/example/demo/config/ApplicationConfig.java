@@ -33,6 +33,7 @@ import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase
 import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
 import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
 import com.example.demo.core.application.usecase.CreateNotificationUseCase;
+import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
@@ -147,14 +148,18 @@ public class ApplicationConfig {
 
     @Bean
     public RegisterToTournamentPort RegisterToTournamentPort(TournamentRepositoryPort tournamentRepositoryPort,
-            TournamentRegistrationPort tournamentRegistrationPort) {
-        return new RegisterToTournamentUseCase(tournamentRepositoryPort, tournamentRegistrationPort);
+            TournamentRegistrationPort tournamentRegistrationPort,
+            NotificationPort notificationPort,
+            CreateNotificationPort createNotificationPort) {
+        return new RegisterToTournamentUseCase(tournamentRepositoryPort, tournamentRegistrationPort, notificationPort, createNotificationPort);
     }
 
     @Bean
     public RegisterTeamToTournamentPort RegisterTeamToTournamentPort(TournamentRepositoryPort tournamentRepositoryPort,
-            TeamRegistrationPort teamRegistrationPort) {
-        return new RegisterTeamToTournamentUseCase(tournamentRepositoryPort, teamRegistrationPort);
+            TeamRegistrationPort teamRegistrationPort,
+            NotificationPort notificationPort,
+            CreateNotificationPort createNotificationPort) {
+        return new RegisterTeamToTournamentUseCase(tournamentRepositoryPort, teamRegistrationPort, notificationPort, createNotificationPort);
     }
 
     @Bean
@@ -169,27 +174,31 @@ public class ApplicationConfig {
     @Bean
     public GenerateEliminationFixtureUseCase generateEliminationFixtureUseCase(
             TournamentRepositoryPort tournamentRepositoryPort,
-            FixturePersistencePort fixturePersistencePort) {
-        return new GenerateEliminationFixtureUseCase(tournamentRepositoryPort, fixturePersistencePort);
+            FixturePersistencePort fixturePersistencePort,
+            NotificationPort notificationPort) {
+        return new GenerateEliminationFixtureUseCase(tournamentRepositoryPort, fixturePersistencePort, notificationPort);
     }
 
     @Bean
     public GenerateLeagueFixturePort generateLeagueFixturePort(
             TournamentRepositoryPort tournamentRepositoryPort,
-            FixturePersistencePort fixturePersistencePort) {
-        return new GenerateLeagueFixtureUseCase(tournamentRepositoryPort, fixturePersistencePort);
+            FixturePersistencePort fixturePersistencePort,
+            NotificationPort notificationPort) {
+        return new GenerateLeagueFixtureUseCase(tournamentRepositoryPort, fixturePersistencePort, notificationPort);
     }
 
     @Bean
     public ReportMatchResultPort ReportMatchResultPort(FixturePersistencePort fixturePersistencePort,
-            TournamentRepositoryPort tournamentRepositoryPort) {
-        return new ReportMatchResultUseCase(fixturePersistencePort, tournamentRepositoryPort);
+            TournamentRepositoryPort tournamentRepositoryPort,
+            NotificationPort notificationPort) {
+        return new ReportMatchResultUseCase(fixturePersistencePort, tournamentRepositoryPort, notificationPort);
     }
 
     @Bean
     public ReportLeagueMatchResultPort reportLeagueMatchResultPort(FixturePersistencePort fixturePersistencePort,
-            TournamentRepositoryPort tournamentRepositoryPort) {
-        return new ReportLeagueMatchResultUseCase(fixturePersistencePort, tournamentRepositoryPort);
+            TournamentRepositoryPort tournamentRepositoryPort,
+            NotificationPort notificationPort) {
+        return new ReportLeagueMatchResultUseCase(fixturePersistencePort, tournamentRepositoryPort, notificationPort);
     }
 
     @Bean
@@ -240,8 +249,10 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public CreateNotificationPort createNotificationPort(NotificationPort notificationPort) {
-        return new CreateNotificationUseCase(notificationPort);
+    public CreateNotificationPort createNotificationPort(
+            NotificationPort notificationPort,
+            NotificationSseService notificationSseService) {
+        return new CreateNotificationUseCase(notificationPort, notificationSseService);
     }
 
     @Bean

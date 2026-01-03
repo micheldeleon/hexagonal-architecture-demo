@@ -18,8 +18,6 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-import com.example.demo.adapters.out.persistence.jpa.entities.FormatEntity;
-
 @Entity
 @Table(name = "tournaments", schema = "public")
 @Getter

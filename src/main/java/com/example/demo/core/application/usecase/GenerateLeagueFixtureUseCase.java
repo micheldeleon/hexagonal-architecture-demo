@@ -9,10 +9,12 @@ import com.example.demo.core.domain.models.Format;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.LeagueFormat;
 import com.example.demo.core.ports.in.GenerateLeagueFixturePort;
 import com.example.demo.core.ports.out.FixturePersistencePort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 
 public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
 
@@ -20,11 +22,14 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
 
     private final TournamentRepositoryPort tournamentRepositoryPort;
     private final FixturePersistencePort fixturePersistencePort;
+    private final NotificationPort notificationPort;
 
     public GenerateLeagueFixtureUseCase(TournamentRepositoryPort tournamentRepositoryPort,
-            FixturePersistencePort fixturePersistencePort) {
+            FixturePersistencePort fixturePersistencePort,
+            NotificationPort notificationPort) {
         this.tournamentRepositoryPort = tournamentRepositoryPort;
         this.fixturePersistencePort = fixturePersistencePort;
+        this.notificationPort = notificationPort;
     }
 
     @Override
@@ -42,6 +47,18 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
             throw new IllegalStateException("El torneo debe estar en estado INICIADO para generar el fixture");
         }
 
+        // 🔔 Notificar que el torneo ha iniciado
+        try {
+            notificationPort.notifyUsersOfTournament(
+                tournamentId,
+                "Torneo Iniciado",
+                "¡El torneo '" + tournament.getName() + "' ha comenzado! Los partidos están siendo generados.",
+                NotificationType.TOURNAMENT_STARTED
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de inicio: " + e.getMessage());
+        }
+
         Format format = tournament.getFormat();
         if (!(format instanceof LeagueFormat)) {
             throw new IllegalStateException("El formato del torneo no es liga");
@@ -56,10 +73,8 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
             throw new IllegalStateException("Se requieren al menos 2 equipos para generar el fixture");
         }
 
-        boolean hadBye = false;
         if (teamIds.size() % 2 != 0) {
             teamIds.add(null); // bye
-            hadBye = true;
         }
 
         List<TournamentMatch> matches = buildRoundRobin(tournamentId, teamIds, doubleRound);
@@ -67,6 +82,18 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
         // Si había bye y se generaron partidos con null, igual no se guardan porque la
         // construcción evita partidos con bye en home/away al omitirlos.
         fixturePersistencePort.saveMatches(matches);
+
+        // 🔔 Notificar fixture generado
+        try {
+            notificationPort.notifyUsersOfTournament(
+                tournamentId,
+                "Fixture Generado",
+                "El fixture del torneo '" + tournament.getName() + "' ha sido generado. ¡Revisa tu calendario!",
+                NotificationType.MATCH_SCHEDULED
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de fixture: " + e.getMessage());
+        }
     }
 
     private List<TournamentMatch> buildRoundRobin(Long tournamentId, List<Long> teamIds, boolean doubleRound) {

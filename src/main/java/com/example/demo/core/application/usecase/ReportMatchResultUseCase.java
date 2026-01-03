@@ -5,10 +5,12 @@ import java.util.Date;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.EliminationFormat;
 import com.example.demo.core.ports.in.ReportMatchResultPort;
 import com.example.demo.core.ports.out.FixturePersistencePort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 
 public class ReportMatchResultUseCase implements ReportMatchResultPort {
 
@@ -17,11 +19,14 @@ public class ReportMatchResultUseCase implements ReportMatchResultPort {
 
     private final FixturePersistencePort fixturePersistencePort;
     private final TournamentRepositoryPort tournamentRepositoryPort;
+    private final NotificationPort notificationPort;
 
     public ReportMatchResultUseCase(FixturePersistencePort fixturePersistencePort,
-            TournamentRepositoryPort tournamentRepositoryPort) {
+            TournamentRepositoryPort tournamentRepositoryPort,
+            NotificationPort notificationPort) {
         this.fixturePersistencePort = fixturePersistencePort;
         this.tournamentRepositoryPort = tournamentRepositoryPort;
+        this.notificationPort = notificationPort;
     }
 
     @Override
@@ -73,6 +78,28 @@ public class ReportMatchResultUseCase implements ReportMatchResultPort {
         match.setStatus(STATUS_FINISHED);
         match.setUpdatedAt(now);
         fixturePersistencePort.saveMatch(match);
+
+        // 🔔 Notificar resultado del partido a ambos equipos
+        try {
+            if (match.getHomeTeamId() != null) {
+                notificationPort.notifyTeamMembers(
+                    match.getHomeTeamId(),
+                    "Resultado de Partido",
+                    "El resultado de tu partido ha sido registrado.",
+                    NotificationType.MATCH_RESULT
+                );
+            }
+            if (match.getAwayTeamId() != null) {
+                notificationPort.notifyTeamMembers(
+                    match.getAwayTeamId(),
+                    "Resultado de Partido",
+                    "El resultado de tu partido ha sido registrado.",
+                    NotificationType.MATCH_RESULT
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de resultado: " + e.getMessage());
+        }
 
         // Avanzar al siguiente partido en la ronda y ajustar si cambió el ganador.
         advanceToNextRound(match, previousWinner, winnerTeamId, now);

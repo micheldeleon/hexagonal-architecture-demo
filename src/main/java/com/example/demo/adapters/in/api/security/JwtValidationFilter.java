@@ -41,6 +41,15 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
+        // Permitir rutas públicas sin validación de token
+        String requestPath = request.getRequestURI();
+        String method = request.getMethod();
+        
+        if (isPublicEndpoint(requestPath, method)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader(HEADER_AUTHORIZATION);
         if (!hasBearerToken(header)) {
             chain.doFilter(request, response);
@@ -62,6 +71,30 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isPublicEndpoint(String path, String method) {
+        // Endpoints completamente públicos
+        if ("OPTIONS".equals(method)) return true;
+        if ("/login".equals(path) && "POST".equals(method)) return true;
+        if ("/api/notifications/create".equals(path) && "POST".equals(method)) return true;
+        if (path.equals("/api/users/register") && "POST".equals(method)) return true;
+        if (path.equals("/api/users/profile") && "PUT".equals(method)) return true;
+        if (path.equals("/api/users/by-id-and-email") && "GET".equals(method)) return true;
+        if (path.equals("/api/mail/test") && "POST".equals(method)) return true;
+        
+        // Rutas con patrones
+        if (path.startsWith("/api/disciplines") && "GET".equals(method)) return true;
+        if (path.startsWith("/api/tournaments/public") && "GET".equals(method)) return true;
+        if (path.startsWith("/api/tournaments/status") && "GET".equals(method)) return true;
+        if (path.matches("/api/tournaments/\\d+/fixture") && "GET".equals(method)) return true;
+        if (path.matches("/api/tournaments/\\d+/race/results") && "GET".equals(method)) return true;
+        if (path.matches("/api/tournaments/\\d+/standings") && "GET".equals(method)) return true;
+        if (path.matches("/api/tournaments/\\d+/register/team") && "POST".equals(method)) return true;
+        if (path.startsWith("/api/tournaments") && "GET".equals(method)) return true;
+        if (path.startsWith("/api/users") && "GET".equals(method)) return true;
+        
+        return false;
     }
 
     private boolean hasBearerToken(String header) {

@@ -3,8 +3,6 @@ package com.example.demo.core.domain.models;
 import java.util.Date;
 import java.util.List;
 
-import com.example.demo.adapters.out.persistence.jpa.entities.DisciplineEntity;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

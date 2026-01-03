@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,10 +14,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.example.demo.adapters.in.api.dto.CreateNotificationRequest;
 import com.example.demo.adapters.in.api.dto.NotificationDTO;
 import com.example.demo.adapters.in.api.dto.NotificationResponse;
+import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.domain.models.Notification;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.in.CreateNotificationPort;
@@ -34,16 +37,40 @@ public class NotificationController {
     private final MarkNotificationAsReadPort markNotificationAsReadPort;
     private final CreateNotificationPort createNotificationPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final NotificationSseService notificationSseService;
 
     public NotificationController(
             GetUserNotificationsPort getUserNotificationsPort,
             MarkNotificationAsReadPort markNotificationAsReadPort,
             CreateNotificationPort createNotificationPort,
-            UserRepositoryPort userRepositoryPort) {
+            UserRepositoryPort userRepositoryPort,
+            NotificationSseService notificationSseService) {
         this.getUserNotificationsPort = getUserNotificationsPort;
         this.markNotificationAsReadPort = markNotificationAsReadPort;
         this.createNotificationPort = createNotificationPort;
         this.userRepositoryPort = userRepositoryPort;
+        this.notificationSseService = notificationSseService;
+    }
+
+    /**
+     * Endpoint SSE para recibir notificaciones en tiempo real.
+     * El cliente se conecta a este endpoint y mantiene la conexión abierta.
+     * Cada vez que se crea una notificación para el usuario, se envía automáticamente.
+     * 
+     * IMPORTANTE: Sin @Transactional para evitar connection leaks.
+     * Obtenemos el userId ANTES de retornar el emitter para cerrar la transacción.
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamNotifications(Authentication authentication) {
+        String email = authentication.getName();
+        
+        // Obtener userId y cerrar transacción ANTES de crear el emitter
+        Long userId = userRepositoryPort.findByEmail(email)
+                .map(User::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        
+        // Ahora crear el emitter sin mantener conexión DB abierta
+        return notificationSseService.createEmitter(userId);
     }
 
     @GetMapping

@@ -1,5 +1,6 @@
 package com.example.demo.core.application.usecase;
 
+import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.domain.models.Notification;
 import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.ports.in.CreateNotificationPort;
@@ -8,9 +9,11 @@ import com.example.demo.core.ports.out.NotificationPort;
 public class CreateNotificationUseCase implements CreateNotificationPort {
 
     private final NotificationPort notificationPort;
+    private final NotificationSseService notificationSseService;
 
-    public CreateNotificationUseCase(NotificationPort notificationPort) {
+    public CreateNotificationUseCase(NotificationPort notificationPort, NotificationSseService notificationSseService) {
         this.notificationPort = notificationPort;
+        this.notificationSseService = notificationSseService;
     }
 
     @Override
@@ -26,6 +29,11 @@ public class CreateNotificationUseCase implements CreateNotificationPort {
         }
 
         Notification notification = new Notification(userId, type, title, message, relatedEntityId);
-        return notificationPort.save(notification);
+        Notification savedNotification = notificationPort.save(notification);
+        
+        // Enviar notificación en tiempo real si el usuario está conectado
+        notificationSseService.sendNotificationToUser(userId, savedNotification);
+        
+        return savedNotification;
     }
 }

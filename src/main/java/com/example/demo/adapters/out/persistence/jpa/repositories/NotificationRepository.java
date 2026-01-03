@@ -111,20 +111,31 @@ public class NotificationRepository implements NotificationPort {
     @Override
     @Transactional
     public void notifyUsersOfTournament(Long tournamentId, String title, String message, NotificationType type) {
-        // Obtener todos los participantes del torneo a través de los equipos
-        List<Long> userIds = entityManager
+        // 1. Obtener usuarios individuales inscritos directamente
+        List<Long> individualUserIds = entityManager
                 .createQuery(
-                        "SELECT DISTINCT p.userId FROM TeamParticipantEntity tp " +
-                        "JOIN tp.team t " +
-                        "JOIN TournamentTeamEntity tt ON tt.teamId = t.id " +
-                        "JOIN ParticipantEntity p ON p.id = tp.participant.id " +
-                        "WHERE tt.tournamentId = :tournamentId",
+                        "SELECT tp.userId FROM TournamentParticipantEntity tp " +
+                        "WHERE tp.tournamentId = :tournamentId",
                         Long.class)
                 .setParameter("tournamentId", tournamentId)
                 .getResultList();
 
-        // Crear notificación para cada participante
-        for (Long userId : userIds) {
+        // 2. Obtener creadores de equipos inscritos (usando IDs primitivos)
+        List<Long> teamCreatorIds = entityManager
+                .createQuery(
+                        "SELECT DISTINCT t.creatorId FROM TeamEntity t " +
+                        "WHERE t.id IN (SELECT tt.teamId FROM TournamentTeamEntity tt WHERE tt.tournamentId = :tournamentId)",
+                        Long.class)
+                .setParameter("tournamentId", tournamentId)
+                .getResultList();
+
+        // Combinar ambas listas (sin duplicados)
+        java.util.Set<Long> allUserIds = new java.util.HashSet<>();
+        allUserIds.addAll(individualUserIds);
+        allUserIds.addAll(teamCreatorIds);
+
+        // Crear notificación para cada usuario
+        for (Long userId : allUserIds) {
             UserEntity user = entityManager.find(UserEntity.class, userId);
             if (user != null) {
                 NotificationEntity notification = new NotificationEntity();
@@ -143,19 +154,16 @@ public class NotificationRepository implements NotificationPort {
     @Override
     @Transactional
     public void notifyTeamMembers(Long teamId, String title, String message, NotificationType type) {
-        // Obtener todos los IDs de usuarios del equipo
-        List<Long> userIds = entityManager
+        // Obtener SOLO el creador del equipo (usando campo primitivo creatorId)
+        Long creatorUserId = entityManager
                 .createQuery(
-                        "SELECT p.userId FROM TeamParticipantEntity tp " +
-                        "JOIN ParticipantEntity p ON p.id = tp.participant.id " +
-                        "WHERE tp.team.id = :teamId",
+                        "SELECT t.creatorId FROM TeamEntity t WHERE t.id = :teamId",
                         Long.class)
                 .setParameter("teamId", teamId)
-                .getResultList();
+                .getSingleResult();
 
-        // Crear notificación para cada miembro
-        for (Long userId : userIds) {
-            UserEntity user = entityManager.find(UserEntity.class, userId);
+        if (creatorUserId != null) {
+            UserEntity user = entityManager.find(UserEntity.class, creatorUserId);
             if (user != null) {
                 NotificationEntity notification = new NotificationEntity();
                 notification.setUser(user);

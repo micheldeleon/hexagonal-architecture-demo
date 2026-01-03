@@ -9,11 +9,13 @@ import com.example.demo.core.domain.models.Format;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.EliminationFormat;
 import com.example.demo.core.ports.in.GenerateEliminationFixturePort;
 import com.example.demo.core.ports.in.GetFixturePort;
 import com.example.demo.core.ports.out.FixturePersistencePort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 
 public class GenerateEliminationFixtureUseCase implements GenerateEliminationFixturePort, GetFixturePort {
 
@@ -22,11 +24,14 @@ public class GenerateEliminationFixtureUseCase implements GenerateEliminationFix
 
     private final TournamentRepositoryPort tournamentRepositoryPort;
     private final FixturePersistencePort fixturePersistencePort;
+    private final NotificationPort notificationPort;
 
     public GenerateEliminationFixtureUseCase(TournamentRepositoryPort tournamentRepositoryPort,
-            FixturePersistencePort fixturePersistencePort) {
+            FixturePersistencePort fixturePersistencePort,
+            NotificationPort notificationPort) {
         this.tournamentRepositoryPort = tournamentRepositoryPort;
         this.fixturePersistencePort = fixturePersistencePort;
+        this.notificationPort = notificationPort;
     }
 
     @Override
@@ -42,6 +47,18 @@ public class GenerateEliminationFixtureUseCase implements GenerateEliminationFix
 
         if (tournament.getStatus() != TournamentStatus.INICIADO) {
             throw new IllegalStateException("El torneo debe estar en estado INICIADO para generar el fixture");
+        }
+
+        // 🔔 Notificar que el torneo ha iniciado
+        try {
+            notificationPort.notifyUsersOfTournament(
+                tournamentId,
+                "Torneo Iniciado",
+                "¡El torneo '" + tournament.getName() + "' ha comenzado! La bracket de eliminación está siendo generada.",
+                NotificationType.TOURNAMENT_STARTED
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de inicio: " + e.getMessage());
         }
 
         Format format = tournament.getFormat();
@@ -69,6 +86,18 @@ public class GenerateEliminationFixtureUseCase implements GenerateEliminationFix
         List<TournamentMatch> matches = buildBracket(tournamentId, teamIds);
         // Guardamos los partidos generados
         fixturePersistencePort.saveMatches(matches);
+
+        // 🔔 Notificar fixture generado
+        try {
+            notificationPort.notifyUsersOfTournament(
+                tournamentId,
+                "Fixture Generado",
+                "El fixture del torneo '" + tournament.getName() + "' ha sido generado. ¡Revisa tu calendario!",
+                NotificationType.MATCH_SCHEDULED
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de fixture: " + e.getMessage());
+        }
     }
 
     @Override

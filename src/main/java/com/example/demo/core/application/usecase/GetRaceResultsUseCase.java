@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.example.demo.core.domain.models.RaceResult;
 import com.example.demo.core.domain.models.Tournament;
-import com.example.demo.core.domain.models.TournamentStatus;
+
 import com.example.demo.core.domain.models.Formats.RaceFormat;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
 import com.example.demo.core.ports.out.RaceResultPersistencePort;

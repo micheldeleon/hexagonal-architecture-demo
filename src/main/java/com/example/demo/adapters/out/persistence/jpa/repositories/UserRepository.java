@@ -15,16 +15,13 @@ import com.example.demo.adapters.out.persistence.jpa.interfaces.RoleRepositoryJp
 import com.example.demo.adapters.out.persistence.jpa.interfaces.UserRepositoryJpa;
 import com.example.demo.adapters.out.persistence.jpa.mappers.DepartmentMapper;
 import com.example.demo.adapters.out.persistence.jpa.mappers.UserMapper;
-import com.example.demo.config.ApplicationConfig;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.out.UserRepositoryPort;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class UserRepository implements UserRepositoryPort {
-
-    private final ApplicationConfig applicationConfig;
 
     private final UserRepositoryJpa userRepositoryJpa;
     private final RoleRepositoryJpa roleRepositoryJpa;
@@ -32,13 +29,11 @@ public class UserRepository implements UserRepositoryPort {
     private final PasswordEncoder passwordEncoder;
 
     public UserRepository(UserRepositoryJpa userRepositoryJpa, RoleRepositoryJpa roleRepositoryJpa,
-            PasswordEncoder passwordEncoder, DepartmentRepositoryJpa dRepositoryJpa,
-            ApplicationConfig applicationConfig) {
+            PasswordEncoder passwordEncoder, DepartmentRepositoryJpa dRepositoryJpa) {
         this.userRepositoryJpa = userRepositoryJpa;
         this.roleRepositoryJpa = roleRepositoryJpa;
         this.passwordEncoder = passwordEncoder;
         this.departmentRepositoryJpa = dRepositoryJpa;
-        this.applicationConfig = applicationConfig;
     }
 
     @Override
@@ -67,13 +62,13 @@ public class UserRepository implements UserRepositoryPort {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public User findById(Long id) {
         return UserMapper.toDomain(userRepositoryJpa.findById(id).get());
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
         return userRepositoryJpa.findByEmail(email)
                 .map(UserMapper::toDomain);

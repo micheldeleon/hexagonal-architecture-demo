@@ -6,20 +6,29 @@ import java.util.List;
 import com.example.demo.adapters.in.api.dto.ParticipantRequest;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.RaceFormat;
 import com.example.demo.core.ports.in.RegisterTeamToTournamentPort;
+import com.example.demo.core.ports.in.CreateNotificationPort;
 import com.example.demo.core.ports.out.TeamRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 
 public class RegisterTeamToTournamentUseCase implements RegisterTeamToTournamentPort {
 
     private final TournamentRepositoryPort tournamentRepositoryPort;
     private final TeamRegistrationPort teamRegistrationPort;
+    private final NotificationPort notificationPort;
+    private final CreateNotificationPort createNotificationPort;
 
     public RegisterTeamToTournamentUseCase(TournamentRepositoryPort tournamentRepositoryPort,
-            TeamRegistrationPort teamRegistrationPort) {
+            TeamRegistrationPort teamRegistrationPort,
+            NotificationPort notificationPort,
+            CreateNotificationPort createNotificationPort) {
         this.tournamentRepositoryPort = tournamentRepositoryPort;
         this.teamRegistrationPort = teamRegistrationPort;
+        this.notificationPort = notificationPort;
+        this.createNotificationPort = createNotificationPort;
     }
 
     @Override
@@ -60,6 +69,33 @@ public class RegisterTeamToTournamentUseCase implements RegisterTeamToTournament
 
         // 👉 Guardar cambios del torneo
         tournamentRepositoryPort.save(tournament, tournament.getOrganizer().getId());
+
+        // 🔔 Notificar inscripción confirmada al capitán
+        try {
+            createNotificationPort.createNotification(
+                userId,
+                NotificationType.REGISTRATION_CONFIRMED,
+                "Equipo Inscrito",
+                "El equipo '" + teamName + "' ha sido inscrito en el torneo '" + tournament.getName() + "'.",
+                tournamentId
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de inscripción: " + e.getMessage());
+        }
+
+        // 🔔 Notificar si el torneo está lleno
+        if (tournament.getMaxParticipantsPerTournament() > 0 && tournament.getTeamsInscribed() >= tournament.getMaxParticipantsPerTournament()) {
+            try {
+                notificationPort.notifyUsersOfTournament(
+                    tournamentId,
+                    "Torneo Completo",
+                    "El torneo '" + tournament.getName() + "' ha alcanzado el máximo de participantes.",
+                    NotificationType.TOURNAMENT_FULL
+                );
+            } catch (Exception e) {
+                System.err.println("Error enviando notificación de torneo lleno: " + e.getMessage());
+            }
+        }
     }
 
 }

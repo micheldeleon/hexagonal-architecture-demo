@@ -56,6 +56,16 @@ public class CancelTournamentUseCase implements CancelTournamentPort {
             throw new IllegalStateException("Solo se puede cancelar un torneo en estado ABIERTO");
         }
 
+        // 🔔 Enviar notificaciones ANTES de eliminar inscripciones
+        String notificationTitle = "Torneo Cancelado";
+        String notificationMessage = "El torneo '" + tournament.getName() + "' ha sido cancelado por el organizador.";
+        
+        try {
+            notificationPort.notifyUsersOfTournament(tournamentId, notificationTitle, notificationMessage, NotificationType.TOURNAMENT_CANCELED);
+        } catch (Exception e) {
+            System.err.println("Error enviando notificaciones: " + e.getMessage());
+        }
+
         //Llamo al puerto de limpieza para que elimine las inscripciones y equipos asociados al torneo.
         tournamentCleanupPort.removeTeamsAndRegistrations(tournamentId);
 
@@ -65,17 +75,6 @@ public class CancelTournamentUseCase implements CancelTournamentPort {
 
         Date canceledAt = new Date();
         tournamentRepositoryPort.update(tournament);
-
-        // Enviar notificaciones a todos los participantes del torneo
-        String notificationTitle = "Torneo Cancelado";
-        String notificationMessage = "El torneo '" + tournament.getName() + "' ha sido cancelado por el organizador.";
-        
-        try {
-            notificationPort.notifyUsersOfTournament(tournamentId, notificationTitle, notificationMessage, NotificationType.TOURNAMENT_CANCELED);
-        } catch (Exception e) {
-            // Log the error but don't fail the operation
-            System.err.println("Error enviando notificaciones: " + e.getMessage());
-        }
 
         //Retorna el metodo con los datos de la cancelación que habia definido en la interfaz para mostrar el resultado.
         return new CancelTournamentResult(tournamentId, user.getName(), canceledAt);
