@@ -34,6 +34,8 @@ import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase
 import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
 import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
 import com.example.demo.core.application.usecase.CreateNotificationUseCase;
+import com.example.demo.core.application.usecase.RateOrganizerUseCase;
+import com.example.demo.core.application.usecase.GetOrganizerReputationUseCase;
 import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
@@ -64,6 +66,8 @@ import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
+import com.example.demo.core.ports.in.RateOrganizerPort;
+import com.example.demo.core.ports.in.GetOrganizerReputationPort;
 import com.example.demo.core.ports.out.DisciplineRepositoryPort;
 import com.example.demo.core.ports.out.FindTournamentsByStatusPort;
 import com.example.demo.core.ports.out.FindTournamentsPort;
@@ -78,6 +82,7 @@ import com.example.demo.core.ports.out.TournamentRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
 import com.example.demo.core.ports.out.TournamentCleanupPort;
+import com.example.demo.core.ports.out.ReputationRepositoryPort;
 
 @Configuration
 public class ApplicationConfig {
@@ -274,6 +279,21 @@ public class ApplicationConfig {
             UserRepositoryPort userRepositoryPort,
             NotificationPort notificationPort) {
         return new StartTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public RateOrganizerPort rateOrganizerPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            UserRepositoryPort userRepositoryPort,
+            ReputationRepositoryPort reputationRepositoryPort) {
+        return new RateOrganizerUseCase(tournamentRepositoryPort, userRepositoryPort, reputationRepositoryPort);
+    }
+
+    @Bean
+    public GetOrganizerReputationPort getOrganizerReputationPort(
+            UserRepositoryPort userRepositoryPort,
+            ReputationRepositoryPort reputationRepositoryPort) {
+        return new GetOrganizerReputationUseCase(reputationRepositoryPort, userRepositoryPort);
     }
 }
 

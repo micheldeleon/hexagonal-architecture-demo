@@ -78,6 +78,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users/organizer").hasRole("USER")
                 .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/tournaments?**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/organizers/*/rate").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/organizers/*/reputation").permitAll()
                 .anyRequest().authenticated())
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil, userRepositoryPort))
                 .addFilterBefore(new JwtValidationFilter(authenticationManager(), jwtUtil),
