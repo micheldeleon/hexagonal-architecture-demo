@@ -49,8 +49,10 @@ public class UserRepository implements UserRepositoryPort {
     @Transactional
     public void save(User entity) {
         entity.setPassword(passwordEncoder.encode(entity.getPassword()));
-        DepartmentEntity dep = departmentRepositoryJpa.findById(0L).get();
-        entity.setDepartment(DepartmentMapper.toDomain(dep));
+        DepartmentEntity dep = departmentRepositoryJpa.findById(0L).orElse(null);
+        if (dep != null) {
+            entity.setDepartment(DepartmentMapper.toDomain(dep));
+        }
         Optional<RoleEntity> userRole = roleRepositoryJpa.findByName("ROLE_USER");
         List<RoleEntity> roles = new ArrayList<>();
         userRole.ifPresent(roles::add);
