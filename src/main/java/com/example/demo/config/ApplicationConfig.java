@@ -91,8 +91,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public RegisterUserPort registerUserPort(UserRepositoryPort userRepositoryPort) {
-        return new RegisterUserUseCase(userRepositoryPort);
+    public RegisterUserPort registerUserPort(UserRepositoryPort userRepositoryPort, CreateNotificationPort createNotificationPort) {
+        return new RegisterUserUseCase(userRepositoryPort, createNotificationPort);
     }
 
     @Bean
