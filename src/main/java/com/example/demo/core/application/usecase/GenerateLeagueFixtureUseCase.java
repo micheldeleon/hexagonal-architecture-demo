@@ -47,18 +47,6 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
             throw new IllegalStateException("El torneo debe estar en estado INICIADO para generar el fixture");
         }
 
-        // 🔔 Notificar que el torneo ha iniciado
-        try {
-            notificationPort.notifyUsersOfTournament(
-                tournamentId,
-                "Torneo Iniciado",
-                "¡El torneo '" + tournament.getName() + "' ha comenzado! Los partidos están siendo generados.",
-                NotificationType.TOURNAMENT_STARTED
-            );
-        } catch (Exception e) {
-            System.err.println("Error enviando notificación de inicio: " + e.getMessage());
-        }
-
         Format format = tournament.getFormat();
         if (!(format instanceof LeagueFormat)) {
             throw new IllegalStateException("El formato del torneo no es liga");

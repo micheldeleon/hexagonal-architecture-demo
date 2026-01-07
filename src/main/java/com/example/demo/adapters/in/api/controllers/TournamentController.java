@@ -31,6 +31,7 @@ import com.example.demo.adapters.in.api.dto.RaceResultResponse;
 import com.example.demo.adapters.in.api.dto.LeagueMatchResultRequest;
 import com.example.demo.adapters.in.api.dto.LeagueStandingResponse;
 import com.example.demo.adapters.in.api.dto.CancelTournamentResponse;
+import com.example.demo.adapters.in.api.dto.StartTournamentResponse;
 import com.example.demo.adapters.in.api.dto.TeamSummaryDto;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
@@ -54,6 +55,7 @@ import com.example.demo.core.ports.in.GetRaceResultsPort;
 import com.example.demo.core.ports.in.ReportLeagueMatchResultPort;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
+import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 
 import jakarta.validation.Valid;
@@ -79,6 +81,7 @@ public class TournamentController {
     private final GetRaceResultsPort getRaceResultsPort;
     private final GetLeagueStandingsPort getLeagueStandingsPort;
     private final CancelTournamentPort cancelTournamentPort;
+    private final StartTournamentPort startTournamentPort;
     private final RemoveTeamFromTournamentPort removeTeamFromTournamentPort;
     private final TeamQueryPort teamQueryPort;
 
@@ -99,6 +102,7 @@ public class TournamentController {
             GetRaceResultsPort getRaceResultsPort,
             GetLeagueStandingsPort getLeagueStandingsPort,
             CancelTournamentPort cancelTournamentPort,
+            StartTournamentPort startTournamentPort,
             RemoveTeamFromTournamentPort removeTeamFromTournamentPort,
             TeamQueryPort teamQueryPort) {
         this.createTournamentPort = createTournamentPort;
@@ -119,6 +123,7 @@ public class TournamentController {
         this.getLeagueStandingsPort = getLeagueStandingsPort;
         this.removeTeamFromTournamentPort = removeTeamFromTournamentPort;
         this.cancelTournamentPort = cancelTournamentPort;
+        this.startTournamentPort = startTournamentPort;
         this.teamQueryPort = teamQueryPort;
     }
 
@@ -200,6 +205,31 @@ public class TournamentController {
                     TournamentStatus.CANCELADO,
                     result.canceledAt(),
                     result.canceledByName(),
+                    message));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/start")
+    public ResponseEntity<?> startTournament(@PathVariable Long id, Authentication authentication) {
+        try {
+            String userEmail = authentication != null ? authentication.getName() : null;
+            var result = startTournamentPort.start(id, userEmail);
+            String message = String.format(
+                    "¡El torneo ha sido iniciado por %s! Cuenta con %d participantes. Revisa el fixture para conocer los horarios.",
+                    result.startedByName(),
+                    result.participantsCount());
+            return ResponseEntity.ok(new StartTournamentResponse(
+                    id,
+                    TournamentStatus.INICIADO,
+                    result.startedAt(),
+                    result.startedByName(),
+                    result.participantsCount(),
                     message));
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());

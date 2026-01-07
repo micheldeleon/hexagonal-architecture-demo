@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.demo.adapters.out.persistence.jpa.entities.NotificationEntity;
 import com.example.demo.adapters.out.persistence.jpa.entities.UserEntity;
+import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.domain.models.Notification;
 import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.ports.out.NotificationPort;
@@ -21,6 +22,12 @@ public class NotificationRepository implements NotificationPort {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final NotificationSseService notificationSseService;
+
+    public NotificationRepository(NotificationSseService notificationSseService) {
+        this.notificationSseService = notificationSseService;
+    }
 
     @Override
     @Transactional
@@ -147,6 +154,15 @@ public class NotificationRepository implements NotificationPort {
                 notification.setRead(false);
                 notification.setCreatedAt(new Date());
                 entityManager.persist(notification);
+                entityManager.flush();
+                
+                // 🔔 Enviar notificación en tiempo real via SSE
+                try {
+                    Notification notificationModel = toModel(notification);
+                    notificationSseService.sendNotificationToUser(userId, notificationModel);
+                } catch (Exception e) {
+                    System.err.println("Error enviando SSE a usuario " + userId + ": " + e.getMessage());
+                }
             }
         }
     }
@@ -174,6 +190,15 @@ public class NotificationRepository implements NotificationPort {
                 notification.setRead(false);
                 notification.setCreatedAt(new Date());
                 entityManager.persist(notification);
+                entityManager.flush();
+                
+                // 🔔 Enviar notificación en tiempo real via SSE
+                try {
+                    Notification notificationModel = toModel(notification);
+                    notificationSseService.sendNotificationToUser(creatorUserId, notificationModel);
+                } catch (Exception e) {
+                    System.err.println("Error enviando SSE a usuario " + creatorUserId + ": " + e.getMessage());
+                }
             }
         }
     }

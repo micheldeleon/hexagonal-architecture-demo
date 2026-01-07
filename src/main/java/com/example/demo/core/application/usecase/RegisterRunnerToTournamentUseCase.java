@@ -6,12 +6,15 @@ import java.util.List;
 import com.example.demo.adapters.in.api.dto.ParticipantRequest;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.RaceFormat;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.in.RegisterRunnerToTournamentPort;
+import com.example.demo.core.ports.in.CreateNotificationPort;
 import com.example.demo.core.ports.out.TeamRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
+import com.example.demo.core.ports.out.NotificationPort;
 import com.example.demo.adapters.in.api.dto.RunnerRegistrationRequest;
 
 public class RegisterRunnerToTournamentUseCase implements RegisterRunnerToTournamentPort {
@@ -19,13 +22,19 @@ public class RegisterRunnerToTournamentUseCase implements RegisterRunnerToTourna
     private final TournamentRepositoryPort tournamentRepositoryPort;
     private final TeamRegistrationPort teamRegistrationPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final NotificationPort notificationPort;
+    private final CreateNotificationPort createNotificationPort;
 
     public RegisterRunnerToTournamentUseCase(TournamentRepositoryPort tournamentRepositoryPort,
             TeamRegistrationPort teamRegistrationPort,
-            UserRepositoryPort userRepositoryPort) {
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort,
+            CreateNotificationPort createNotificationPort) {
         this.tournamentRepositoryPort = tournamentRepositoryPort;
         this.teamRegistrationPort = teamRegistrationPort;
         this.userRepositoryPort = userRepositoryPort;
+        this.notificationPort = notificationPort;
+        this.createNotificationPort = createNotificationPort;
     }
 
     @Override
@@ -60,6 +69,40 @@ public class RegisterRunnerToTournamentUseCase implements RegisterRunnerToTourna
         Long disciplineId = tournament.getDiscipline() != null ? tournament.getDiscipline().getId() : null;
 
         teamRegistrationPort.registerTeam(tournamentId, user.getId(), teamName, disciplineId, List.of(runner));
+
+        // 👉 SUMAR +1 a teamsInscribed
+        int current = tournament.getTeamsInscribed();
+        tournament.setTeamsInscribed(current + 1);
+
+        // 👉 Guardar cambios del torneo
+        tournamentRepositoryPort.save(tournament, tournament.getOrganizer().getId());
+
+        // 🔔 Notificar inscripción confirmada
+        try {
+            createNotificationPort.createNotification(
+                user.getId(),
+                NotificationType.REGISTRATION_CONFIRMED,
+                "Inscripción Confirmada",
+                "Te has inscrito exitosamente al torneo '" + tournament.getName() + "'.",
+                tournamentId
+            );
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de inscripción: " + e.getMessage());
+        }
+
+        // 🔔 Notificar si el torneo está lleno
+        if (tournament.getMaxParticipantsPerTournament() > 0 && tournament.getTeamsInscribed() >= tournament.getMaxParticipantsPerTournament()) {
+            try {
+                notificationPort.notifyUsersOfTournament(
+                    tournamentId,
+                    "Torneo Completo",
+                    "El torneo '" + tournament.getName() + "' ha alcanzado el máximo de participantes.",
+                    NotificationType.TOURNAMENT_FULL
+                );
+            } catch (Exception e) {
+                System.err.println("Error enviando notificación de torneo lleno: " + e.getMessage());
+            }
+        }
     }
 
     private String resolveFullName(User user, RunnerRegistrationRequest request) {

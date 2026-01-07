@@ -29,6 +29,7 @@ import com.example.demo.core.application.usecase.ReportMatchResultUseCase;
 import com.example.demo.core.application.usecase.GetLeagueStandingsUseCase;
 import com.example.demo.core.application.usecase.UpdateUserUseCase;
 import com.example.demo.core.application.usecase.CancelTournamentUseCase;
+import com.example.demo.core.application.usecase.StartTournamentUseCase;
 import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase;
 import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
 import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
@@ -62,6 +63,7 @@ import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
+import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.out.DisciplineRepositoryPort;
 import com.example.demo.core.ports.out.FindTournamentsByStatusPort;
 import com.example.demo.core.ports.out.FindTournamentsPort;
@@ -166,9 +168,11 @@ public class ApplicationConfig {
     public RegisterRunnerToTournamentPort registerRunnerToTournamentPort(
             TournamentRepositoryPort tournamentRepositoryPort,
             TeamRegistrationPort teamRegistrationPort,
-            UserRepositoryPort userRepositoryPort) {
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort,
+            CreateNotificationPort createNotificationPort) {
         return new RegisterRunnerToTournamentUseCase(tournamentRepositoryPort, teamRegistrationPort,
-                userRepositoryPort);
+                userRepositoryPort, notificationPort, createNotificationPort);
     }
 
     @Bean
@@ -262,6 +266,14 @@ public class ApplicationConfig {
             UserRepositoryPort userRepositoryPort,
             NotificationPort notificationPort) {
         return new CancelTournamentUseCase(tournamentRepositoryPort, tournamentCleanupPort, userRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public StartTournamentPort startTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort) {
+        return new StartTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
     }
 }
 
