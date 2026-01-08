@@ -1,5 +1,5 @@
 # Build artefacts
-target
+!target
 
 # VCS
 .git
