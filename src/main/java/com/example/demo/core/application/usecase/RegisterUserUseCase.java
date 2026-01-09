@@ -50,7 +50,11 @@ public class RegisterUserUseCase implements RegisterUserPort {
                 null
             );
         } catch (Exception e) {
-            throw new RuntimeException("Failed to register user", e);
+            String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            if (causeMessage == null || causeMessage.isBlank()) {
+                causeMessage = "Unknown error";
+            }
+            throw new RuntimeException("Failed to register user: " + causeMessage, e);
         }
     }
 }
