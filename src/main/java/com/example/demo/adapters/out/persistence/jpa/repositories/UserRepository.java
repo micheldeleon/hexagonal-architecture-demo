@@ -48,11 +48,18 @@ public class UserRepository implements UserRepositoryPort {
     @Override
     @Transactional
     public void save(User entity) {
-        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
-        DepartmentEntity dep = departmentRepositoryJpa.findById(0L).orElse(null);
-        if (dep != null) {
-            entity.setDepartment(DepartmentMapper.toDomain(dep));
+        if (userRepositoryJpa.findByEmail(entity.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already in use");
         }
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        DepartmentEntity dep = null;
+        var depIterator = departmentRepositoryJpa.findAll().iterator();
+        if (depIterator.hasNext()) {
+            dep = depIterator.next();
+        } else {
+            dep = departmentRepositoryJpa.save(new DepartmentEntity(null, "Sin departamento"));
+        }
+        entity.setDepartment(DepartmentMapper.toDomain(dep));
         Optional<RoleEntity> userRole = roleRepositoryJpa.findByName("ROLE_USER");
         List<RoleEntity> roles = new ArrayList<>();
         userRole.ifPresent(roles::add);
