@@ -56,6 +56,7 @@ public class TournamentMapper {
         e.setTeamsInscribed(t.getTeamsInscribed());
         e.setIsDoubleRound(t.getIsDoubleRound());
         e.setDetalles(t.getDetalles());
+        e.setImageUrl(t.getImageUrl());
 
         return e;
     }
@@ -100,6 +101,7 @@ public class TournamentMapper {
                 entity.getTeamsInscribed() != null ? entity.getTeamsInscribed() : 0);
         tournament.setIsDoubleRound(entity.getIsDoubleRound());
         tournament.setDetalles(entity.getDetalles());
+        tournament.setImageUrl(entity.getImageUrl());
 
         return tournament;
     }

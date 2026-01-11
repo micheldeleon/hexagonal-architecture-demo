@@ -43,4 +43,6 @@ public class UserFullDto {
     private Long departmentId;
 
     private double reputation;
+    
+    private String profileImageUrl; // URL de la imagen de perfil
 }

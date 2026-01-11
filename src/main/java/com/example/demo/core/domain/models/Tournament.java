@@ -34,6 +34,7 @@ public class Tournament { // Torneo
     private TournamentStatus status; // estado
     private Boolean isDoubleRound; // Para formato liga: indica si es a doble ronda (ida y vuelta)
     private String detalles; // detalles del torneo con toda la información
+    private String imageUrl; // URL de la imagen del torneo
     // Factory principal para crear torneos sanos
 
     public static Tournament create(Tournament t) {

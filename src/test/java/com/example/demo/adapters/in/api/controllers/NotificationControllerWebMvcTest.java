@@ -35,6 +35,7 @@ import com.example.demo.core.ports.out.UserRepositoryPort;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("removal")
 @WebMvcTest(NotificationController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class NotificationControllerWebMvcTest {

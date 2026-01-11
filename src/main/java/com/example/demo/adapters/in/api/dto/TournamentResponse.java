@@ -29,5 +29,6 @@ public record TournamentResponse(
     String status,
     String password,
     String detalles,
+    String imageUrl,
     List<Team> teams
 ) {}

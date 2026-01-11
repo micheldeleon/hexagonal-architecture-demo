@@ -37,7 +37,8 @@ class TournamentMapperTest {
                 "Premio",
                 0.0,
                 true,
-                "Detalles");
+                "Detalles",
+                null);
 
         Tournament domain = TournamentMapper.toDomain(request);
         assertThat(domain.getName()).isEqualTo("Torneo A");

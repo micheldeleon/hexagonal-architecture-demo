@@ -13,6 +13,7 @@ import com.example.demo.adapters.out.persistence.jpa.interfaces.TournamentReposi
 import com.example.demo.adapters.out.persistence.jpa.mappers.TournamentMapper;
 import com.example.demo.core.domain.models.Team;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.out.TeamLoaderPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 
@@ -23,15 +24,18 @@ public class TournamentRepository implements TournamentRepositoryPort {
     private final FormatRepositoryJpa formatRepositoryJpa;
     private final DisciplineRepositoryJpa disciplineRepositoryJpa;
     private final TeamLoaderPort teamLoaderPort;
+    private final UserRepository userRepository;
 
     public TournamentRepository(TournamentRepositoryJpa tournamentRepositoryJpa,
             FormatRepositoryJpa formatRepositoryJpa,
             DisciplineRepositoryJpa disciplineRepositoryJpa,
-            TeamLoaderPort teamLoaderPort) {
+            TeamLoaderPort teamLoaderPort,
+            UserRepository userRepository) {
         this.tournamentRepositoryJpa = tournamentRepositoryJpa;
         this.formatRepositoryJpa = formatRepositoryJpa;
         this.disciplineRepositoryJpa = disciplineRepositoryJpa;
         this.teamLoaderPort = teamLoaderPort;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -53,9 +57,19 @@ public class TournamentRepository implements TournamentRepositoryPort {
 
     @Override
     public Tournament findById(Long id) {
-        return tournamentRepositoryJpa.findById(id)
+        Tournament tournament = tournamentRepositoryJpa.findById(id)
                 .map(TournamentMapper::mapToDomain)
                 .orElse(null);
+        
+        // Cargar el organizador completo con todos sus datos
+        if (tournament != null && tournament.getOrganizer() != null && tournament.getOrganizer().getId() != null) {
+            User organizer = userRepository.findById(tournament.getOrganizer().getId());
+            if (organizer != null) {
+                tournament.setOrganizer(organizer);
+            }
+        }
+        
+        return tournament;
     }
 
     @Override

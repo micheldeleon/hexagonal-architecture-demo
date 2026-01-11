@@ -23,6 +23,7 @@ public class User {
     private String phoneNumber; // celular
     private String address;
     private Department department;
+    private String profileImageUrl; // URL de la imagen de perfil
     private List<Tournament> tournaments;
     private List<Registration> registrations;
 
@@ -45,6 +46,9 @@ public class User {
         setPhoneNumber(patch.getPhoneNumber());
         setAddress(patch.getAddress());
         setDepartment(patch.getDepartment());
+        if (patch.getProfileImageUrl() != null) {
+            setProfileImageUrl(patch.getProfileImageUrl());
+        }
     }
 
     public User(Long id,

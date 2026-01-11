@@ -1,21 +1,25 @@
 package com.example.demo.adapters.in.api.controllers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.adapters.in.api.dto.UserFullDto;
 import com.example.demo.adapters.in.api.dto.UserRegisterDto;
 import com.example.demo.adapters.in.api.dto.UserResponseDTO;
 import com.example.demo.adapters.in.api.mappers.UserMapperDtos;
+import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.in.GetUserByIdPort;
@@ -41,9 +45,12 @@ public class UserController {
     private final ToOrganizerPort toOrganizerPort;
     private final GetAllTournamentsPort getAllTournamentsPort;
     private final GetTournamentPort getTournamentPort;
+    private final ImageUploadService imageUploadService;
+    
     public UserController(ListUsersPort listUsersPort, RegisterUserPort registerUserPort,
             UpdateProfilePort updateProfilePort, GetUserByIdAndEmailPort getUserPort, GetUserByIdPort getUserByIdPort,
-            ToOrganizerPort toOrganizerPort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort) {
+            ToOrganizerPort toOrganizerPort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort,
+            ImageUploadService imageUploadService) {
         this.listUsersPort = listUsersPort;
         this.registerUserPort = registerUserPort;
         this.updateProfilePort = updateProfilePort;
@@ -52,6 +59,7 @@ public class UserController {
         this.toOrganizerPort = toOrganizerPort;
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentPort = getTournamentPort;
+        this.imageUploadService = imageUploadService;
     }
 
     @GetMapping
@@ -152,6 +160,67 @@ public class UserController {
         try {
             toOrganizerPort.toOrganizer(id);
             return ResponseEntity.ok("Exito");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para subir imagen de perfil de usuario
+     * POST /api/users/{id}/profile-image
+     * Solo el propio usuario puede subir/cambiar su imagen de perfil
+     */
+    @PostMapping("/{id}/profile-image")
+    public ResponseEntity<?> uploadProfileImage(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile file,
+            org.springframework.security.core.Authentication authentication) {
+        try {
+            // Validar autenticación
+            if (authentication == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body("Debe estar autenticado para subir imágenes");
+            }
+            
+            String userEmail = authentication.getName();
+            
+            // Obtener usuario
+            User user = getUserByIdPort.getUserById(id);
+            if (user == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .body("Usuario no encontrado");
+            }
+            
+            // Validar que el usuario autenticado sea el mismo que está actualizando
+            if (!user.getEmail().equals(userEmail)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body("Solo puedes actualizar tu propia imagen de perfil");
+            }
+            
+            // Validar que el archivo no esté vacío
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("No se proporcionó archivo");
+            }
+            
+            // Validar que sea una imagen
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body("El archivo debe ser una imagen");
+            }
+            
+            // Subir imagen a Supabase Storage
+            String imageUrl = imageUploadService.uploadUserImage(file);
+            
+            // Actualizar usuario con la nueva URL
+            user.setProfileImageUrl(imageUrl);
+            updateProfilePort.completion(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Imagen subida exitosamente",
+                "imageUrl", imageUrl
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

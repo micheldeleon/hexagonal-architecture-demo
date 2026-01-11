@@ -38,7 +38,8 @@ class UserMapperDtosTest {
                 "+598 91 234 567",
                 "Calle 123",
                 9L,
-                0.0);
+                0.0,
+                null);
         User user = UserMapperDtos.toDomain(dto);
         assertThat(user.getDepartment()).isEqualTo(new Department(9L));
     }

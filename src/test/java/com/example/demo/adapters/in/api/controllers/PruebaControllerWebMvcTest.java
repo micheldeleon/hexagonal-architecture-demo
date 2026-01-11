@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.demo.core.ports.out.EmailSenderPort;
 
+@SuppressWarnings("removal")
 @WebMvcTest(PruebaController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class PruebaControllerWebMvcTest {

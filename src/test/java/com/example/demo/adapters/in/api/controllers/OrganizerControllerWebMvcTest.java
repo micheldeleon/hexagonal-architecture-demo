@@ -28,6 +28,7 @@ import com.example.demo.core.ports.out.UserRepositoryPort;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("removal")
 @WebMvcTest(OrganizerController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class OrganizerControllerWebMvcTest {

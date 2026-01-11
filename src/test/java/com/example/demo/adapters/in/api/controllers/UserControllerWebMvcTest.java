@@ -35,9 +35,11 @@ import com.example.demo.core.ports.in.ListUsersPort;
 import com.example.demo.core.ports.in.RegisterUserPort;
 import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
+import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("removal")
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class UserControllerWebMvcTest {
@@ -106,7 +108,8 @@ class UserControllerWebMvcTest {
                 "+598 91 234 567",
                 "Calle 123",
                 1L,
-                0.0);
+                0.0,
+                null);
 
         mockMvc.perform(put("/api/users/profile")
                 .contentType(MediaType.APPLICATION_JSON)

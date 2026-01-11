@@ -19,6 +19,7 @@ import com.example.demo.core.domain.models.SimpleFormat;
 import com.example.demo.core.ports.in.ListDisciplinesPort;
 import com.example.demo.core.ports.in.ListFormatsByDisciplinePort;
 
+@SuppressWarnings("removal")
 @WebMvcTest(DisciplineController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class DisciplineControllerWebMvcTest {

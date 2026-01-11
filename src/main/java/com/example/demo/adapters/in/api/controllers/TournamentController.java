@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.adapters.in.api.dto.CreateTournamentRequest;
 import com.example.demo.adapters.in.api.dto.RegisterToTournamentRequest;
@@ -33,6 +34,7 @@ import com.example.demo.adapters.in.api.dto.LeagueStandingResponse;
 import com.example.demo.adapters.in.api.dto.CancelTournamentResponse;
 import com.example.demo.adapters.in.api.dto.StartTournamentResponse;
 import com.example.demo.adapters.in.api.dto.TeamSummaryDto;
+import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.TournamentMatch;
@@ -56,6 +58,7 @@ import com.example.demo.core.ports.in.ReportLeagueMatchResultPort;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
+import com.example.demo.core.ports.in.UpdateTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 
 import jakarta.validation.Valid;
@@ -84,6 +87,8 @@ public class TournamentController {
     private final StartTournamentPort startTournamentPort;
     private final RemoveTeamFromTournamentPort removeTeamFromTournamentPort;
     private final TeamQueryPort teamQueryPort;
+    private final ImageUploadService imageUploadService;
+    private final UpdateTournamentPort updateTournamentPort;
 
     public TournamentController(CreateTournamentPort createTournamentPort,
             GetAllTournamentsPort getAllTournamentsPort,
@@ -104,7 +109,9 @@ public class TournamentController {
             CancelTournamentPort cancelTournamentPort,
             StartTournamentPort startTournamentPort,
             RemoveTeamFromTournamentPort removeTeamFromTournamentPort,
-            TeamQueryPort teamQueryPort) {
+            TeamQueryPort teamQueryPort,
+            ImageUploadService imageUploadService,
+            UpdateTournamentPort updateTournamentPort) {
         this.createTournamentPort = createTournamentPort;
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentById = getTournamentById;
@@ -125,6 +132,8 @@ public class TournamentController {
         this.cancelTournamentPort = cancelTournamentPort;
         this.startTournamentPort = startTournamentPort;
         this.teamQueryPort = teamQueryPort;
+        this.imageUploadService = imageUploadService;
+        this.updateTournamentPort = updateTournamentPort;
     }
 
     @PostMapping("/organizer/{organizerId}")
@@ -485,6 +494,63 @@ public class TournamentController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para subir imagen de torneo
+     * POST /api/tournaments/{id}/image
+     * Solo el organizador del torneo puede subir/cambiar la imagen
+     */
+    @PostMapping("/{id}/image")
+    public ResponseEntity<?> uploadTournamentImage(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile file,
+            Authentication authentication) {
+        try {
+            // Validar autenticación
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Debe estar autenticado para subir imágenes");
+            }
+            
+            String userEmail = authentication.getName();
+            
+            // Obtener torneo
+            Tournament tournament = getTournamentById.getTournamentById(id);
+            
+            // Validar que el usuario sea el organizador
+            if (!tournament.getOrganizer().getEmail().equals(userEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Solo el organizador del torneo puede subir imágenes");
+            }
+            
+            // Validar que el archivo no esté vacío
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("No se proporcionó archivo");
+            }
+            
+            // Validar que sea una imagen
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest().body("El archivo debe ser una imagen");
+            }
+            
+            // Subir imagen a Supabase Storage
+            String imageUrl = imageUploadService.uploadTournamentImage(file);
+            
+            // Actualizar torneo con la nueva URL
+            tournament.setImageUrl(imageUrl);
+            updateTournamentPort.update(tournament);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Imagen subida exitosamente",
+                "imageUrl", imageUrl
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

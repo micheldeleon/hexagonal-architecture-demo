@@ -90,4 +90,7 @@ public class TournamentJpaEntity {
 
   @Column(name = "detalles", columnDefinition = "TEXT")
   private String detalles;
+
+  @Column(name = "image_url")
+  private String imageUrl;
 }

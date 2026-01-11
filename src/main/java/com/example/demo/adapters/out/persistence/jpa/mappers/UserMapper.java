@@ -18,6 +18,7 @@ public class UserMapper {
         userEntity.setNationalId(user.getNationalId());
         userEntity.setPhoneNumber(user.getPhoneNumber());
         userEntity.setAddress(user.getAddress());
+        userEntity.setProfileImageUrl(user.getProfileImageUrl());
         userEntity.setDepartment(DepartmentMapper.toEntity(user.getDepartment()));
         userEntity.setRoles(roles);
         return userEntity;
@@ -34,6 +35,7 @@ public class UserMapper {
         user.setNationalId(userEntity.getNationalId());
         user.setPhoneNumber(userEntity.getPhoneNumber());
         user.setAddress(userEntity.getAddress());
+        user.setProfileImageUrl(userEntity.getProfileImageUrl());
         user.setDepartment(DepartmentMapper.toDomain(userEntity.getDepartment()));
         return user;
     }

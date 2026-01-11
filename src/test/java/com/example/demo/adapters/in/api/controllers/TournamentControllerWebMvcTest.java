@@ -37,6 +37,7 @@ import com.example.demo.core.domain.models.SimpleFormat;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
+import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GenerateEliminationFixturePort;
@@ -56,10 +57,12 @@ import com.example.demo.core.ports.in.ReportLeagueMatchResultPort;
 import com.example.demo.core.ports.in.ReportMatchResultPort;
 import com.example.demo.core.ports.in.ReportRaceResultsPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
+import com.example.demo.core.ports.in.UpdateTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("removal")
 @WebMvcTest(TournamentController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class TournamentControllerWebMvcTest {
@@ -110,6 +113,10 @@ class TournamentControllerWebMvcTest {
     private RemoveTeamFromTournamentPort removeTeamFromTournamentPort;
     @MockBean
     private TeamQueryPort teamQueryPort;
+    @MockBean
+    private ImageUploadService imageUploadService;
+    @MockBean
+    private UpdateTournamentPort updateTournamentPort;
 
     @Test
     void create_returnsCreatedTournamentResponse() throws Exception {
@@ -131,7 +138,8 @@ class TournamentControllerWebMvcTest {
                 null,
                 0.0,
                 false,
-                "Detalles");
+                "Detalles",
+                null);
 
         Tournament domain = TestDataFactory.baseTournament(10L, 1L);
         domain.setFormat(new SimpleFormat(2L, "Liga", true));

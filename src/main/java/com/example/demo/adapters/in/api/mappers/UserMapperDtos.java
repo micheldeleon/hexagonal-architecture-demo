@@ -46,7 +46,8 @@ public class UserMapperDtos {
                 user.getPhoneNumber(),
                 user.getAddress(),
                 departmentId,
-                reputation);
+                reputation,
+                user.getProfileImageUrl());
     }
 
 }

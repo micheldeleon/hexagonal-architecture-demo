@@ -39,6 +39,7 @@ public class UserEntity {
     private String nationalId; // ci
     private String phoneNumber; // celular
     private String address;
+    private String profileImageUrl; // URL de la imagen de perfil
     @ManyToOne
     private DepartmentEntity department;
     @ManyToMany
