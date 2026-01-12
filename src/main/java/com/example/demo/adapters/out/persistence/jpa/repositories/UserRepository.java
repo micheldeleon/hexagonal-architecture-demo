@@ -93,6 +93,7 @@ public class UserRepository implements UserRepositoryPort {
     }
 
     @Override
+    @Transactional
     public void addRole(Long userId, String roleName) {
         UserEntity userEntity = userRepositoryJpa.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
         RoleEntity roleEntity = roleRepositoryJpa.findByName(roleName).orElseThrow(() -> new IllegalArgumentException("Role not found"));
