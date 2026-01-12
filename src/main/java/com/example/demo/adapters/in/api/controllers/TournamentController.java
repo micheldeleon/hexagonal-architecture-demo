@@ -44,6 +44,7 @@ import com.example.demo.core.ports.in.GenerateEliminationFixturePort;
 import com.example.demo.core.ports.in.GenerateLeagueFixturePort;
 import com.example.demo.core.ports.in.GetFixturePort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
+import com.example.demo.core.ports.in.GetLatestTournamentsPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.ListPublicTournamentsPort;
 import com.example.demo.core.ports.in.ListTournamentsByStatusPort;
@@ -70,6 +71,7 @@ public class TournamentController {
     private final CreateTournamentPort createTournamentPort;
     private final GetAllTournamentsPort getAllTournamentsPort;
     private final GetTournamentByIdPort getTournamentById;
+    private final GetLatestTournamentsPort getLatestTournamentsPort;
     private final ListPublicTournamentsPort listPublicTournamentsPort;
     private final ListTournamentsByStatusPort listTournamentsByStatusPort;
     private final RegisterToTournamentPort registerToTournamentPort;
@@ -93,6 +95,7 @@ public class TournamentController {
     public TournamentController(CreateTournamentPort createTournamentPort,
             GetAllTournamentsPort getAllTournamentsPort,
             GetTournamentByIdPort getTournamentById,
+            GetLatestTournamentsPort getLatestTournamentsPort,
             ListPublicTournamentsPort listPublicTournamentsPort,
             ListTournamentsByStatusPort listTournamentsByStatusPort,
             RegisterToTournamentPort registerToTournamentPort,
@@ -115,6 +118,7 @@ public class TournamentController {
         this.createTournamentPort = createTournamentPort;
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentById = getTournamentById;
+        this.getLatestTournamentsPort = getLatestTournamentsPort;
         this.listPublicTournamentsPort = listPublicTournamentsPort;
         this.listTournamentsByStatusPort = listTournamentsByStatusPort;
         this.registerToTournamentPort = registerToTournamentPort;
@@ -185,6 +189,19 @@ public class TournamentController {
     public ResponseEntity<?> getAllTournaments() {
         try {
             return ResponseEntity.ok(getAllTournamentsPort.getAllTournaments());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<?> getLatest3Tournaments() {
+        try {
+            List<Tournament> tournaments = getLatestTournamentsPort.getLatest3();
+            List<TournamentResponse> responses = tournaments.stream()
+                    .map(TournamentMapper::toResponse)
+                    .toList();
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

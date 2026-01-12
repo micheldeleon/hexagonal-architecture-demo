@@ -25,4 +25,10 @@ public interface TournamentRepositoryPort {
      * @return Lista de torneos con equipos cargados
      */
     List<Tournament> findAllWithTeams();
+    
+    /**
+     * Obtiene los últimos 3 torneos creados ordenados por fecha de creación descendente
+     * @return Lista con los últimos 3 torneos creados
+     */
+    List<Tournament> findLatest3();
 }

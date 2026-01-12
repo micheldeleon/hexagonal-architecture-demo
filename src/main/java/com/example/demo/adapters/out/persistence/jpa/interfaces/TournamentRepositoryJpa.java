@@ -39,4 +39,7 @@ public interface TournamentRepositoryJpa extends JpaRepository<TournamentJpaEnti
                         @Param("withCost") Boolean withCost);
 
         List<TournamentJpaEntity> findByStatus(String status);
+        
+        @Query("SELECT t FROM TournamentJpaEntity t ORDER BY t.createdAt DESC LIMIT 3")
+        List<TournamentJpaEntity> findTop3ByOrderByCreatedAtDesc();
 }

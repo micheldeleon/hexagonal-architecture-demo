@@ -126,4 +126,23 @@ public class TournamentRepository implements TournamentRepositoryPort {
         return TournamentMapper.mapToDomain(entity);
     }
 
+    @Override
+    public List<Tournament> findLatest3() {
+        List<Tournament> tournaments = new ArrayList<>();
+        for (TournamentJpaEntity entity : tournamentRepositoryJpa.findTop3ByOrderByCreatedAtDesc()) {
+            Tournament tournament = TournamentMapper.mapToDomain(entity);
+            
+            // Cargar el organizador completo con todos sus datos
+            if (tournament != null && tournament.getOrganizer() != null && tournament.getOrganizer().getId() != null) {
+                User organizer = userRepository.findById(tournament.getOrganizer().getId());
+                if (organizer != null) {
+                    tournament.setOrganizer(organizer);
+                }
+            }
+            
+            tournaments.add(tournament);
+        }
+        return tournaments;
+    }
+
 }

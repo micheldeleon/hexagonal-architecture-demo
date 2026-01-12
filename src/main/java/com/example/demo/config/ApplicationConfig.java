@@ -7,6 +7,7 @@ import com.example.demo.adapters.out.persistence.jpa.mappers.UserMapper;
 import com.example.demo.core.application.usecase.CreateTournamentUseCase;
 import com.example.demo.core.application.usecase.GetAllTournamentsUseCase;
 import com.example.demo.core.application.usecase.GetTournamentByIdUseCase;
+import com.example.demo.core.application.usecase.GetLatestTournamentsUseCase;
 import com.example.demo.core.application.usecase.GetTournamentUseCase;
 import com.example.demo.core.application.usecase.GetUserByIdAndEmailUseCase;
 import com.example.demo.core.application.usecase.GetUserByIdUseCase;
@@ -45,6 +46,7 @@ import com.example.demo.core.ports.in.GetUserNotificationsPort;
 import com.example.demo.core.ports.in.MarkNotificationAsReadPort;
 import com.example.demo.core.ports.in.CreateNotificationPort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
+import com.example.demo.core.ports.in.GetLatestTournamentsPort;
 import com.example.demo.core.ports.in.GetTournamentPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
 import com.example.demo.core.ports.in.GetUserByIdPort;
@@ -153,6 +155,11 @@ public class ApplicationConfig {
     @Bean
     public GetTournamentByIdPort getTournamentById(TournamentRepositoryPort tournamentRepositoryPort) {
         return new GetTournamentByIdUseCase(tournamentRepositoryPort);
+    }
+
+    @Bean
+    public GetLatestTournamentsPort getLatestTournamentsPort(TournamentRepositoryPort tournamentRepositoryPort) {
+        return new GetLatestTournamentsUseCase(tournamentRepositoryPort);
     }
 
     @Bean
