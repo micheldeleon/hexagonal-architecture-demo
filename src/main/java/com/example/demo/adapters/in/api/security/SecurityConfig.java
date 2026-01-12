@@ -49,39 +49,77 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, JwtUtil jwtUtil, UserRepositoryPort userRepositoryPort)
             throws Exception {
         return http.authorizeHttpRequests((authz) -> authz
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()// sacar
+                // OPTIONS para CORS
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Login
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                
+                // ===== USUARIOS - Reglas específicas primero =====
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/users/profile").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users/*/profile-image").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/users/organizer").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/api/users/{id}/profile-image").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/by-id-and-email").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/disciplines/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/tournaments").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                
+                // ===== TORNEOS - Reglas específicas primero =====
+                // Imágenes (específico antes que genérico)
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/image").authenticated()
+                
+                // Fixture
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/fixture/elimination").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/fixture/league").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/{id}/fixture").permitAll()
+                
+                // Resultados de carreras
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/race/results").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/{id}/race/results").permitAll()
+                
+                // Resultados de partidos
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{tournamentId}/matches/{matchId}/league-result").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{tournamentId}/matches/{matchId}/result").hasRole("ORGANIZER")
+                
+                // Inscripciones
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/register").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/register/runner").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/register/team").permitAll()
+                
+                // Remover equipo
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{tournamentId}/remove-team").permitAll()
+                
+                // Acciones del organizador
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/cancel").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/start").hasRole("ORGANIZER")
+                
+                // Standings
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/{id}/standings").permitAll()
+                
+                // Consultas públicas de torneos
                 .requestMatchers(HttpMethod.GET, "/api/tournaments/public").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tournaments/status").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/register").hasRole("USER")
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/register/runner").hasRole("USER")
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/register/team").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/fixture/elimination").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/fixture/league").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/image").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/tournaments/*/fixture").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/race/results").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.GET, "/api/tournaments/*/race/results").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/matches/*/league-result").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.POST, "/api/tournaments/*/matches/*/result").hasRole("ORGANIZER")
-                .requestMatchers(HttpMethod.GET, "/api/tournaments/*/standings").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/mail/test").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/all").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/latest").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tournaments/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tournaments").permitAll()
+                
+                // ===== DISCIPLINAS =====
+                .requestMatchers(HttpMethod.GET, "/api/disciplines/**").permitAll()
+                
+                // ===== NOTIFICACIONES =====
                 .requestMatchers(HttpMethod.POST, "/api/notifications/create").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/notifications/stream").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/tournaments").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/users/organizer").hasRole("USER")
-                .requestMatchers(HttpMethod.GET, "/api/tournaments/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/users/tournaments?**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/organizers/*/rate").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/organizers/*/reputation").permitAll()
+                
+                // ===== REPUTACIÓN =====
+                .requestMatchers(HttpMethod.POST, "/api/organizers/{id}/rate").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/organizers/{id}/reputation").permitAll()
+                
+                // ===== MAIL (Testing) =====
+                .requestMatchers(HttpMethod.POST, "/api/mail/test").permitAll()
+                
+                // Cualquier otra petición requiere autenticación
                 .anyRequest().authenticated())
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil, userRepositoryPort))
                 .addFilterBefore(new JwtValidationFilter(authenticationManager(), jwtUtil),
