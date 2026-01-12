@@ -3,6 +3,7 @@ package com.example.demo.core.application.usecase;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
+import org.springframework.transaction.annotation.Transactional;
 
 public class ToOrganizerUseCase implements ToOrganizerPort {
 
@@ -12,6 +13,7 @@ public class ToOrganizerUseCase implements ToOrganizerPort {
     }
 
     @Override
+    @Transactional
     public void toOrganizer(Long userId) {
         User user = userRepositoryPort.findById(userId);
         if(user == null) {
