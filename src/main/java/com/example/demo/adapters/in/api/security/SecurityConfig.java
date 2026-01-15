@@ -112,14 +112,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/notifications/create").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/notifications/stream").authenticated()
                 
-                // ===== REPUTACIÓN =====
+                // ===== REPUTACIA"N =====
                 .requestMatchers(HttpMethod.POST, "/api/organizers/{id}/rate").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/organizers/{id}/reputation").permitAll()
                 
                 // ===== MAIL (Testing) =====
                 .requestMatchers(HttpMethod.POST, "/api/mail/test").permitAll()
                 
-                // Cualquier otra petición requiere autenticación
+                // Health checks
+                .requestMatchers(HttpMethod.GET, "/").permitAll()
+                .requestMatchers(HttpMethod.GET, "/error").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/info").permitAll()
                 .anyRequest().authenticated())
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil, userRepositoryPort))
                 .addFilterBefore(new JwtValidationFilter(authenticationManager(), jwtUtil),
