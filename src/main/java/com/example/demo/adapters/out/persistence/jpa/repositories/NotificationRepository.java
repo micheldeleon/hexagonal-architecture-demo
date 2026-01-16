@@ -15,7 +15,8 @@ import com.example.demo.core.ports.out.NotificationPort;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class NotificationRepository implements NotificationPort {
@@ -116,59 +117,105 @@ public class NotificationRepository implements NotificationPort {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyUsersOfTournament(Long tournamentId, String title, String message, NotificationType type) {
-        // 1. Obtener usuarios individuales inscritos directamente
-        List<Long> individualUserIds = entityManager
-                .createQuery(
-                        "SELECT tp.userId FROM TournamentParticipantEntity tp " +
-                        "WHERE tp.tournamentId = :tournamentId",
-                        Long.class)
-                .setParameter("tournamentId", tournamentId)
-                .getResultList();
-
-        // 2. Obtener creadores de equipos inscritos (usando IDs primitivos)
-        List<Long> teamCreatorIds = entityManager
-                .createQuery(
-                        "SELECT DISTINCT t.creatorId FROM TeamEntity t " +
-                        "WHERE t.id IN (SELECT tt.teamId FROM TournamentTeamEntity tt WHERE tt.tournamentId = :tournamentId)",
-                        Long.class)
-                .setParameter("tournamentId", tournamentId)
-                .getResultList();
-
-        // Combinar ambas listas (sin duplicados)
+        System.out.println("🔔 Iniciando notificaciones para torneo ID: " + tournamentId);
         java.util.Set<Long> allUserIds = new java.util.HashSet<>();
-        allUserIds.addAll(individualUserIds);
-        allUserIds.addAll(teamCreatorIds);
+        
+        try {
+            // 1. Obtener usuarios individuales inscritos directamente
+            List<Long> individualUserIds = entityManager
+                    .createQuery(
+                            "SELECT tp.userId FROM TournamentParticipantEntity tp " +
+                            "WHERE tp.tournamentId = :tournamentId",
+                            Long.class)
+                    .setParameter("tournamentId", tournamentId)
+                    .getResultList();
+            
+            System.out.println("📋 Participantes individuales encontrados: " + (individualUserIds != null ? individualUserIds.size() : 0));
+            if (individualUserIds != null && !individualUserIds.isEmpty()) {
+                allUserIds.addAll(individualUserIds);
+                System.out.println("   IDs: " + individualUserIds);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error obteniendo participantes individuales: " + e.getMessage());
+            e.printStackTrace();
+        }
 
-        // Crear notificación para cada usuario
-        for (Long userId : allUserIds) {
-            UserEntity user = entityManager.find(UserEntity.class, userId);
-            if (user != null) {
-                NotificationEntity notification = new NotificationEntity();
-                notification.setUser(user);
-                notification.setType(type);
-                notification.setTitle(title);
-                notification.setMessage(message);
-                notification.setRelatedEntityId(tournamentId);
-                notification.setRead(false);
-                notification.setCreatedAt(new Date());
-                entityManager.persist(notification);
-                entityManager.flush();
+        try {
+            // 2. Obtener IDs de equipos inscritos en el torneo
+            List<Long> teamIds = entityManager
+                    .createQuery(
+                            "SELECT tt.teamId FROM TournamentTeamEntity tt WHERE tt.tournamentId = :tournamentId",
+                            Long.class)
+                    .setParameter("tournamentId", tournamentId)
+                    .getResultList();
+            
+            System.out.println("👥 Equipos encontrados: " + (teamIds != null ? teamIds.size() : 0));
+            if (teamIds != null && !teamIds.isEmpty()) {
+                System.out.println("   IDs de equipos: " + teamIds);
                 
-                // 🔔 Enviar notificación en tiempo real via SSE
-                try {
-                    Notification notificationModel = toModel(notification);
-                    notificationSseService.sendNotificationToUser(userId, notificationModel);
-                } catch (Exception e) {
-                    System.err.println("Error enviando SSE a usuario " + userId + ": " + e.getMessage());
+                // 3. Obtener creadores de esos equipos
+                List<Long> teamCreatorIds = entityManager
+                        .createQuery(
+                                "SELECT DISTINCT t.creatorId FROM TeamEntity t WHERE t.id IN :teamIds",
+                                Long.class)
+                        .setParameter("teamIds", teamIds)
+                        .getResultList();
+                
+                System.out.println("👤 Creadores de equipos encontrados: " + (teamCreatorIds != null ? teamCreatorIds.size() : 0));
+                if (teamCreatorIds != null && !teamCreatorIds.isEmpty()) {
+                    allUserIds.addAll(teamCreatorIds);
+                    System.out.println("   IDs de creadores: " + teamCreatorIds);
                 }
             }
+        } catch (Exception e) {
+            System.err.println("❌ Error obteniendo creadores de equipos: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        System.out.println("📬 Total de usuarios a notificar: " + allUserIds.size());
+        
+        // Crear notificación para cada usuario
+        int notified = 0;
+        for (Long userId : allUserIds) {
+            try {
+                UserEntity user = entityManager.find(UserEntity.class, userId);
+                if (user != null) {
+                    NotificationEntity notification = new NotificationEntity();
+                    notification.setUser(user);
+                    notification.setType(type);
+                    notification.setTitle(title);
+                    notification.setMessage(message);
+                    notification.setRelatedEntityId(tournamentId);
+                    notification.setRead(false);
+                    notification.setCreatedAt(new Date());
+                    entityManager.persist(notification);
+                    entityManager.flush();
+                    
+                    // 🔔 Enviar notificación en tiempo real via SSE
+                    try {
+                        Notification notificationModel = toModel(notification);
+                        notificationSseService.sendNotificationToUser(userId, notificationModel);
+                        notified++;
+                        System.out.println("✅ Notificación enviada a usuario " + userId);
+                    } catch (Exception e) {
+                        System.err.println("❌ Error enviando SSE a usuario " + userId + ": " + e.getMessage());
+                    }
+                } else {
+                    System.err.println("⚠️ Usuario " + userId + " no encontrado");
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Error creando notificación para usuario " + userId + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        
+        System.out.println("✅ Proceso completado. Notificaciones enviadas: " + notified + "/" + allUserIds.size());
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyTeamMembers(Long teamId, String title, String message, NotificationType type) {
         // Obtener SOLO el creador del equipo (usando campo primitivo creatorId)
         Long creatorUserId = entityManager

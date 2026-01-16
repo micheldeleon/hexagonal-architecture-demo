@@ -306,8 +306,8 @@ public class ApplicationConfig {
     }
 
     @Bean
-    public UpdateTournamentPort updateTournamentPort(TournamentRepositoryPort tournamentRepositoryPort) {
-        return new UpdateTournamentUseCase(tournamentRepositoryPort);
+    public UpdateTournamentPort updateTournamentPort(TournamentRepositoryPort tournamentRepositoryPort, NotificationPort notificationPort) {
+        return new UpdateTournamentUseCase(tournamentRepositoryPort, notificationPort);
     }
 }
 

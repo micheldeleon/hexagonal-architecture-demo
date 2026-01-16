@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +24,7 @@ import com.example.demo.adapters.in.api.dto.RemoveTeamFromTournamentRequest;
 import com.example.demo.adapters.in.api.dto.RunnerRegistrationRequest;
 import com.example.demo.adapters.in.api.dto.TournamentResponse;
 import com.example.demo.adapters.in.api.dto.TournamentSummaryResponse;
+import com.example.demo.adapters.in.api.dto.UpdateTournamentRequest;
 import com.example.demo.adapters.in.api.mappers.TournamentMapper;
 import com.example.demo.adapters.in.api.mappers.TournamentSummaryMapper;
 import com.example.demo.adapters.in.api.dto.RegisterTeamRequest;
@@ -263,6 +265,84 @@ public class TournamentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para actualizar un torneo existente
+     * PUT /api/tournaments/{id}
+     * Solo puede modificarse si está ABIERTO
+     * No se puede modificar precio ni premio si hay equipos inscritos
+     * Notifica a los participantes inscritos sobre los cambios
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateTournament(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateTournamentRequest request,
+            Authentication authentication) {
+        try {
+            // Validar autenticación
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Debe estar autenticado para actualizar torneos");
+            }
+            
+            String userEmail = authentication.getName();
+            
+            // Obtener torneo actual
+            Tournament currentTournament = getTournamentById.getTournamentById(id);
+            
+            // Validar que el usuario sea el organizador
+            if (!currentTournament.getOrganizer().getEmail().equals(userEmail)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Solo el organizador del torneo puede modificarlo");
+            }
+            
+            // Crear torneo actualizado con los cambios
+            Tournament updatedTournament = new Tournament();
+            updatedTournament.setId(id);
+            
+            // Campos que siempre se pueden actualizar (si están presentes)
+            updatedTournament.setName(request.getName() != null ? request.getName() : currentTournament.getName());
+            updatedTournament.setStartAt(request.getStartAt() != null ? request.getStartAt() : currentTournament.getStartAt());
+            updatedTournament.setEndAt(request.getEndAt() != null ? request.getEndAt() : currentTournament.getEndAt());
+            updatedTournament.setRegistrationDeadline(request.getRegistrationDeadline() != null ? request.getRegistrationDeadline() : currentTournament.getRegistrationDeadline());
+            updatedTournament.setDetalles(request.getDetalles() != null ? request.getDetalles() : currentTournament.getDetalles());
+            updatedTournament.setImageUrl(request.getImageUrl() != null ? request.getImageUrl() : currentTournament.getImageUrl());
+            updatedTournament.setPrivateTournament(request.getPrivateTournament() != null ? request.getPrivateTournament() : currentTournament.isPrivateTournament());
+            updatedTournament.setPassword(request.getPassword() != null ? request.getPassword() : currentTournament.getPassword());
+            updatedTournament.setMinParticipantsPerTournament(request.getMinParticipantsPerTournament() != null ? request.getMinParticipantsPerTournament() : currentTournament.getMinParticipantsPerTournament());
+            updatedTournament.setMaxParticipantsPerTournament(request.getMaxParticipantsPerTournament() != null ? request.getMaxParticipantsPerTournament() : currentTournament.getMaxParticipantsPerTournament());
+            
+            // Campos sensibles (precio y premio)
+            updatedTournament.setRegistrationCost(request.getRegistrationCost() != null ? request.getRegistrationCost() : currentTournament.getRegistrationCost());
+            updatedTournament.setPrize(request.getPrize() != null ? request.getPrize() : currentTournament.getPrize());
+            
+            // Mantener campos que no se pueden modificar
+            updatedTournament.setTeams(currentTournament.getTeams());
+            updatedTournament.setTeamsInscribed(currentTournament.getTeamsInscribed());
+            updatedTournament.setDiscipline(currentTournament.getDiscipline());
+            updatedTournament.setFormat(currentTournament.getFormat());
+            updatedTournament.setCreatedAt(currentTournament.getCreatedAt());
+            updatedTournament.setMinParticipantsPerTeam(currentTournament.getMinParticipantsPerTeam());
+            updatedTournament.setMaxParticipantsPerTeam(currentTournament.getMaxParticipantsPerTeam());
+            updatedTournament.setOrganizer(currentTournament.getOrganizer());
+            updatedTournament.setStatus(currentTournament.getStatus());
+            updatedTournament.setIsDoubleRound(currentTournament.getIsDoubleRound());
+            
+            // Actualizar a través del caso de uso (que hace las validaciones)
+            Tournament savedTournament = updateTournamentPort.update(updatedTournament);
+            
+            return ResponseEntity.ok(TournamentMapper.toResponse(savedTournament));
+            
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar torneo: " + e.getMessage());
         }
     }
 

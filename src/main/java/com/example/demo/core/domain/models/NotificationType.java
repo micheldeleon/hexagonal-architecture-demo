@@ -3,6 +3,7 @@ package com.example.demo.core.domain.models;
 public enum NotificationType {
     WELCOME("Bienvenida"),
     TOURNAMENT_CANCELED("Torneo cancelado"),
+    TOURNAMENT_UPDATED("Torneo actualizado"),
     TEAM_REMOVED("Equipo eliminado del torneo"),
     TOURNAMENT_STARTED("Torneo iniciado"),
     MATCH_SCHEDULED("Partido programado"),
