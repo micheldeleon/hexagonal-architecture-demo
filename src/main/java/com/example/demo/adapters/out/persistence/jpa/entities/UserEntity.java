@@ -34,6 +34,8 @@ public class UserEntity {
     @Column(unique = true) // email
     private String email;
     private String password;
+    @Column(unique = true)
+    private String googleSub;
     private Date dateOfBirth; // fechaNacimiento
     @Column(unique = true)
     private String nationalId; // ci

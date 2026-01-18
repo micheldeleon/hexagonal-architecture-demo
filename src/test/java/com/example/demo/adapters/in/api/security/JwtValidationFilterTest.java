@@ -41,6 +41,21 @@ class JwtValidationFilterTest {
     }
 
     @Test
+    void doFilterInternal_skipsValidationForGoogleLoginEvenWithBearerHeader() throws ServletException, IOException {
+        JwtUtil jwtUtil = new JwtUtil();
+        JwtValidationFilter filter = new JwtValidationFilter(Mockito.mock(AuthenticationManager.class), jwtUtil);
+        FilterChain chain = Mockito.mock(FilterChain.class);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/login/google");
+        request.addHeader("Authorization", "Bearer some.google.id.token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, chain);
+        verify(chain).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
     void doFilterInternal_returns401OnInvalidTokenForProtectedEndpoint() throws ServletException, IOException {
         JwtUtil jwtUtil = new JwtUtil();
         JwtValidationFilter filter = new JwtValidationFilter(Mockito.mock(AuthenticationManager.class), jwtUtil);

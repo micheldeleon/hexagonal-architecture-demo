@@ -14,6 +14,7 @@ public class UserMapper {
         userEntity.setLastName(user.getLastName());
         userEntity.setEmail(user.getEmail());
         userEntity.setPassword(user.getPassword());
+        userEntity.setGoogleSub(user.getGoogleSub());
         userEntity.setDateOfBirth(user.getDateOfBirth());
         userEntity.setNationalId(user.getNationalId());
         userEntity.setPhoneNumber(user.getPhoneNumber());
@@ -31,6 +32,7 @@ public class UserMapper {
         user.setLastName(userEntity.getLastName());
         user.setEmail(userEntity.getEmail());
         user.setPassword(userEntity.getPassword());
+        user.setGoogleSub(userEntity.getGoogleSub());
         user.setDateOfBirth(userEntity.getDateOfBirth());
         user.setNationalId(userEntity.getNationalId());
         user.setPhoneNumber(userEntity.getPhoneNumber());

@@ -77,6 +77,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         // Endpoints completamente públicos
         if ("OPTIONS".equals(method)) return true;
         if ("/login".equals(path) && "POST".equals(method)) return true;
+        if ("/login/google".equals(path) && "POST".equals(method)) return true;
         if ("/api/notifications/create".equals(path) && "POST".equals(method)) return true;
         if (path.equals("/api/users/register") && "POST".equals(method)) return true;
         if (path.equals("/api/users/profile") && "PUT".equals(method)) return true;

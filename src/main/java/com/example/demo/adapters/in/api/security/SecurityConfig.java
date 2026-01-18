@@ -54,6 +54,7 @@ public class SecurityConfig {
                 
                 // Login
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/login/google").permitAll()
                 
                 // ===== USUARIOS - Reglas específicas primero =====
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()

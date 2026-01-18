@@ -18,6 +18,7 @@ public class User {
     private String lastName; // apellido
     private String email;
     private String password;
+    private String googleSub;
     private Date dateOfBirth; // fechaNacimiento
     private String nationalId; // ci
     private String phoneNumber; // celular

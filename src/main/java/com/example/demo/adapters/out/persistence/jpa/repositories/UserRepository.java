@@ -84,6 +84,13 @@ public class UserRepository implements UserRepositoryPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findByGoogleSub(String googleSub) {
+        return userRepositoryJpa.findByGoogleSub(googleSub)
+                .map(UserMapper::toDomain);
+    }
+
+    @Override
     @Transactional
     public void update(User user) {
         User lastUser = findByEmail(user.getEmail()).get();
@@ -100,6 +107,29 @@ public class UserRepository implements UserRepositoryPort {
         if (!userEntity.getRoles().contains(roleEntity)) {
             userEntity.getRoles().add(roleEntity);
             userRepositoryJpa.save(userEntity);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void linkGoogleSub(Long userId, String googleSub) {
+        UserEntity userEntity = userRepositoryJpa.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String existing = userEntity.getGoogleSub();
+        if (existing == null || existing.isBlank()) {
+            userRepositoryJpa.findByGoogleSub(googleSub).ifPresent(other -> {
+                if (!other.getId().equals(userId)) {
+                    throw new IllegalArgumentException("Google account already linked to another user");
+                }
+            });
+            userEntity.setGoogleSub(googleSub);
+            userRepositoryJpa.save(userEntity);
+            return;
+        }
+
+        if (!existing.equals(googleSub)) {
+            throw new IllegalArgumentException("User already linked to a different Google account");
         }
     }
     
