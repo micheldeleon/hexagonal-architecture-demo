@@ -38,6 +38,13 @@ import com.example.demo.core.application.usecase.CreateNotificationUseCase;
 import com.example.demo.core.application.usecase.RateOrganizerUseCase;
 import com.example.demo.core.application.usecase.GetOrganizerReputationUseCase;
 import com.example.demo.core.application.usecase.UpdateTournamentUseCase;
+import com.example.demo.core.application.usecase.CreatePostUseCase;
+import com.example.demo.core.application.usecase.GetPostsUseCase;
+import com.example.demo.core.application.usecase.ClosePostUseCase;
+import com.example.demo.core.application.usecase.CreateComentarioUseCase;
+import com.example.demo.core.application.usecase.GetComentariosUseCase;
+import com.example.demo.core.application.usecase.ContactarAvisoUseCase;
+import com.example.demo.core.application.usecase.GetContactosUseCase;
 import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
@@ -72,6 +79,13 @@ import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.in.RateOrganizerPort;
 import com.example.demo.core.ports.in.GetOrganizerReputationPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
+import com.example.demo.core.ports.in.CreatePostPort;
+import com.example.demo.core.ports.in.GetPostsPort;
+import com.example.demo.core.ports.in.ClosePostPort;
+import com.example.demo.core.ports.in.CreateComentarioPort;
+import com.example.demo.core.ports.in.GetComentariosPort;
+import com.example.demo.core.ports.in.ContactarAvisoPort;
+import com.example.demo.core.ports.in.GetContactosPort;
 import com.example.demo.core.ports.out.DisciplineRepositoryPort;
 import com.example.demo.core.ports.out.FindTournamentsByStatusPort;
 import com.example.demo.core.ports.out.FindTournamentsPort;
@@ -87,6 +101,9 @@ import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
 import com.example.demo.core.ports.out.TournamentCleanupPort;
 import com.example.demo.core.ports.out.ReputationRepositoryPort;
+import com.example.demo.core.ports.out.PostRepositoryPort;
+import com.example.demo.core.ports.out.ComentarioRepositoryPort;
+import com.example.demo.core.ports.out.ContactoReveladoRepositoryPort;
 
 @Configuration
 public class ApplicationConfig {
@@ -308,6 +325,49 @@ public class ApplicationConfig {
     @Bean
     public UpdateTournamentPort updateTournamentPort(TournamentRepositoryPort tournamentRepositoryPort, NotificationPort notificationPort) {
         return new UpdateTournamentUseCase(tournamentRepositoryPort, notificationPort);
+    }
+
+    // ==================== BLOG SYSTEM BEANS ====================
+    
+    @Bean
+    public CreatePostPort createPostPort(PostRepositoryPort postRepository, UserRepositoryPort userRepository) {
+        return new CreatePostUseCase(postRepository, userRepository);
+    }
+    
+    @Bean
+    public GetPostsPort getPostsPort(PostRepositoryPort postRepository) {
+        return new GetPostsUseCase(postRepository);
+    }
+    
+    @Bean
+    public ClosePostPort closePostPort(PostRepositoryPort postRepository) {
+        return new ClosePostUseCase(postRepository);
+    }
+    
+    @Bean
+    public CreateComentarioPort createComentarioPort(
+            ComentarioRepositoryPort comentarioRepository,
+            PostRepositoryPort postRepository,
+            UserRepositoryPort userRepository) {
+        return new CreateComentarioUseCase(comentarioRepository, postRepository, userRepository);
+    }
+    
+    @Bean
+    public GetComentariosPort getComentariosPort(ComentarioRepositoryPort comentarioRepository) {
+        return new GetComentariosUseCase(comentarioRepository);
+    }
+    
+    @Bean
+    public ContactarAvisoPort contactarAvisoPort(
+            ContactoReveladoRepositoryPort contactoRepository,
+            PostRepositoryPort postRepository,
+            UserRepositoryPort userRepository) {
+        return new ContactarAvisoUseCase(contactoRepository, postRepository, userRepository);
+    }
+    
+    @Bean
+    public GetContactosPort getContactosPort(ContactoReveladoRepositoryPort contactoRepository) {
+        return new GetContactosUseCase(contactoRepository);
     }
 }
 

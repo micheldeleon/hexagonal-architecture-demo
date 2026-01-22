@@ -11,7 +11,11 @@ public enum NotificationType {
     REGISTRATION_CONFIRMED("Inscripción confirmada"),
     TOURNAMENT_FULL("Torneo lleno"),
     TOURNAMENT_REMINDER("Recordatorio de torneo"),
-    GENERAL("Notificación general");
+    GENERAL("Notificación general"),
+    // Nuevos tipos para el blog
+    NUEVO_COMENTARIO_POST("Nuevo comentario en tu publicación"),
+    RESPUESTA_COMENTARIO("Alguien respondió tu comentario"),
+    CONTACTO_AVISO("Interés en tu aviso");
 
     private final String description;
 
