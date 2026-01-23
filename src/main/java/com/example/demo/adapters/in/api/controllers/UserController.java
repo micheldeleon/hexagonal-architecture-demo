@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.adapters.in.api.dto.ChangePasswordDto;
 import com.example.demo.adapters.in.api.dto.UserFullDto;
 import com.example.demo.adapters.in.api.dto.UserRegisterDto;
 import com.example.demo.adapters.in.api.dto.UserResponseDTO;
@@ -22,6 +23,7 @@ import com.example.demo.adapters.in.api.mappers.UserMapperDtos;
 import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.User;
+import com.example.demo.core.ports.in.ChangePasswordPort;
 import com.example.demo.core.ports.in.GetUserByIdPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
 import com.example.demo.core.ports.in.ListUsersPort;
@@ -46,11 +48,12 @@ public class UserController {
     private final GetAllTournamentsPort getAllTournamentsPort;
     private final GetTournamentPort getTournamentPort;
     private final ImageUploadService imageUploadService;
+    private final ChangePasswordPort changePasswordPort;
     
     public UserController(ListUsersPort listUsersPort, RegisterUserPort registerUserPort,
             UpdateProfilePort updateProfilePort, GetUserByIdAndEmailPort getUserPort, GetUserByIdPort getUserByIdPort,
             ToOrganizerPort toOrganizerPort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort,
-            ImageUploadService imageUploadService) {
+            ImageUploadService imageUploadService, ChangePasswordPort changePasswordPort) {
         this.listUsersPort = listUsersPort;
         this.registerUserPort = registerUserPort;
         this.updateProfilePort = updateProfilePort;
@@ -60,6 +63,7 @@ public class UserController {
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentPort = getTournamentPort;
         this.imageUploadService = imageUploadService;
+        this.changePasswordPort = changePasswordPort;
     }
 
     @GetMapping
@@ -223,6 +227,50 @@ public class UserController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Endpoint para cambiar contraseña de usuario
+     * PUT /api/users/{id}/change-password
+     * Solo el propio usuario puede cambiar su contraseña
+     */
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<?> changePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangePasswordDto changePasswordDto,
+            org.springframework.security.core.Authentication authentication) {
+        try {
+            // Validar autenticación
+            if (authentication == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body("Debe estar autenticado para cambiar la contraseña");
+            }
+            
+            String userEmail = authentication.getName();
+            
+            // Obtener usuario
+            User user = getUserByIdPort.getUserById(id);
+            if (user == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND)
+                    .body("Usuario no encontrado");
+            }
+            
+            // Validar que el usuario autenticado sea el mismo que está cambiando la contraseña
+            if (!user.getEmail().equals(userEmail)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body("Solo puedes cambiar tu propia contraseña");
+            }
+            
+            // Cambiar contraseña
+            changePasswordPort.changePassword(id, changePasswordDto.getCurrentPassword(), changePasswordDto.getNewPassword());
+            
+            return ResponseEntity.ok(Map.of("message", "Contraseña cambiada exitosamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al cambiar la contraseña: " + e.getMessage());
         }
     }
     // @GetMapping(params = {"id", "email"})

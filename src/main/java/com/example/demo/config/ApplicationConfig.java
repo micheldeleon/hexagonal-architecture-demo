@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.example.demo.adapters.out.persistence.jpa.mappers.UserMapper;
+import com.example.demo.core.application.usecase.ChangePasswordUseCase;
 import com.example.demo.core.application.usecase.CreateTournamentUseCase;
 import com.example.demo.core.application.usecase.GetAllTournamentsUseCase;
 import com.example.demo.core.application.usecase.GetTournamentByIdUseCase;
@@ -46,6 +47,7 @@ import com.example.demo.core.application.usecase.GetComentariosUseCase;
 import com.example.demo.core.application.usecase.ContactarAvisoUseCase;
 import com.example.demo.core.application.usecase.GetContactosUseCase;
 import com.example.demo.core.application.service.NotificationSseService;
+import com.example.demo.core.ports.in.ChangePasswordPort;
 import com.example.demo.core.ports.in.CreateTournamentPort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.RemoveTeamFromTournamentPort;
@@ -368,6 +370,13 @@ public class ApplicationConfig {
     @Bean
     public GetContactosPort getContactosPort(ContactoReveladoRepositoryPort contactoRepository) {
         return new GetContactosUseCase(contactoRepository);
+    }
+    
+    @Bean
+    public ChangePasswordPort changePasswordPort(
+            com.example.demo.adapters.out.persistence.jpa.interfaces.UserRepositoryJpa userRepositoryJpa,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+        return new ChangePasswordUseCase(userRepositoryJpa, passwordEncoder);
     }
 }
 

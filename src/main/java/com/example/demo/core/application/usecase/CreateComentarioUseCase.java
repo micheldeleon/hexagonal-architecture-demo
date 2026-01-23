@@ -1,7 +1,6 @@
 package com.example.demo.core.application.usecase;
 
 import com.example.demo.core.domain.models.Comentario;
-import com.example.demo.core.domain.models.Post;
 import com.example.demo.core.ports.in.CreateComentarioPort;
 import com.example.demo.core.ports.out.ComentarioRepositoryPort;
 import com.example.demo.core.ports.out.PostRepositoryPort;
