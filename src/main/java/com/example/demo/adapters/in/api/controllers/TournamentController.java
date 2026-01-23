@@ -284,7 +284,7 @@ public class TournamentController {
             // Validar autenticación
             if (authentication == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Debe estar autenticado para actualizar torneos");
+                    .body("update_tournament: auth_missing id=" + id);
             }
             
             String userEmail = authentication.getName();
@@ -295,7 +295,7 @@ public class TournamentController {
             // Validar que el usuario sea el organizador
             if (!currentTournament.getOrganizer().getEmail().equals(userEmail)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Solo el organizador del torneo puede modificarlo");
+                    .body("update_tournament: organizer_mismatch id=" + id + ", user=" + userEmail);
             }
             
             // Crear torneo actualizado con los cambios
@@ -336,13 +336,17 @@ public class TournamentController {
             return ResponseEntity.ok(TournamentMapper.toResponse(savedTournament));
             
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("update_tournament: not_found id=" + id + ", error=" + e.getMessage());
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body("update_tournament: invalid_state id=" + id + ", error=" + e.getMessage());
         } catch (SecurityException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("update_tournament: forbidden id=" + id + ", error=" + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar torneo: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("update_tournament: unexpected_error id=" + id + ", error=" + e.getMessage());
         }
     }
 

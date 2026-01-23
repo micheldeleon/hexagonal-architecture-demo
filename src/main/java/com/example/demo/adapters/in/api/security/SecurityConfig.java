@@ -94,6 +94,7 @@ public class SecurityConfig {
                 // Acciones del organizador
                 .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/tournaments/{id}/start").hasRole("ORGANIZER")
+                .requestMatchers(HttpMethod.PUT, "/api/tournaments/{id}").authenticated()
                 
                 // Standings
                 .requestMatchers(HttpMethod.GET, "/api/tournaments/{id}/standings").permitAll()
