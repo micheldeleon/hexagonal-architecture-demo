@@ -6,6 +6,7 @@ public enum NotificationType {
     TOURNAMENT_UPDATED("Torneo actualizado"),
     TEAM_REMOVED("Equipo eliminado del torneo"),
     TOURNAMENT_STARTED("Torneo iniciado"),
+    TOURNAMENT_FINALIZED("Torneo finalizado"),
     MATCH_SCHEDULED("Partido programado"),
     MATCH_RESULT("Resultado de partido"),
     REGISTRATION_CONFIRMED("Inscripción confirmada"),

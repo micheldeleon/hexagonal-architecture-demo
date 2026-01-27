@@ -32,6 +32,7 @@ import com.example.demo.core.application.usecase.GetLeagueStandingsUseCase;
 import com.example.demo.core.application.usecase.UpdateUserUseCase;
 import com.example.demo.core.application.usecase.CancelTournamentUseCase;
 import com.example.demo.core.application.usecase.StartTournamentUseCase;
+import com.example.demo.core.application.usecase.FinalizeTournamentUseCase;
 import com.example.demo.core.application.usecase.RemoveTeamFromTournamentUseCase;
 import com.example.demo.core.application.usecase.GetUserNotificationsUseCase;
 import com.example.demo.core.application.usecase.MarkNotificationAsReadUseCase;
@@ -78,6 +79,7 @@ import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
+import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.RateOrganizerPort;
 import com.example.demo.core.ports.in.GetOrganizerReputationPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
@@ -307,6 +309,15 @@ public class ApplicationConfig {
             UserRepositoryPort userRepositoryPort,
             NotificationPort notificationPort) {
         return new StartTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public FinalizeTournamentPort finalizeTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            FixturePersistencePort fixturePersistencePort,
+            RaceResultPersistencePort raceResultPersistencePort,
+            NotificationPort notificationPort) {
+        return new FinalizeTournamentUseCase(tournamentRepositoryPort, fixturePersistencePort, raceResultPersistencePort, notificationPort);
     }
 
     @Bean

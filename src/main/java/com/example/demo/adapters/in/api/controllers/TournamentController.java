@@ -60,6 +60,7 @@ import com.example.demo.core.ports.in.GetRaceResultsPort;
 import com.example.demo.core.ports.in.ReportLeagueMatchResultPort;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.CancelTournamentPort;
+import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
@@ -88,6 +89,7 @@ public class TournamentController {
     private final GetRaceResultsPort getRaceResultsPort;
     private final GetLeagueStandingsPort getLeagueStandingsPort;
     private final CancelTournamentPort cancelTournamentPort;
+    private final FinalizeTournamentPort finalizeTournamentPort;
     private final StartTournamentPort startTournamentPort;
     private final RemoveTeamFromTournamentPort removeTeamFromTournamentPort;
     private final TeamQueryPort teamQueryPort;
@@ -112,6 +114,7 @@ public class TournamentController {
             GetRaceResultsPort getRaceResultsPort,
             GetLeagueStandingsPort getLeagueStandingsPort,
             CancelTournamentPort cancelTournamentPort,
+            FinalizeTournamentPort finalizeTournamentPort,
             StartTournamentPort startTournamentPort,
             RemoveTeamFromTournamentPort removeTeamFromTournamentPort,
             TeamQueryPort teamQueryPort,
@@ -136,6 +139,7 @@ public class TournamentController {
         this.getLeagueStandingsPort = getLeagueStandingsPort;
         this.removeTeamFromTournamentPort = removeTeamFromTournamentPort;
         this.cancelTournamentPort = cancelTournamentPort;
+        this.finalizeTournamentPort = finalizeTournamentPort;
         this.startTournamentPort = startTournamentPort;
         this.teamQueryPort = teamQueryPort;
         this.imageUploadService = imageUploadService;
@@ -261,6 +265,21 @@ public class TournamentController {
                     message));
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/finalize")
+    public ResponseEntity<?> finalizeTournament(@PathVariable Long id) {
+        try {
+            finalizeTournamentPort.finalizeTournament(id);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Torneo finalizado exitosamente",
+                    "tournamentId", id,
+                    "status", TournamentStatus.FINALIZADO));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (IllegalStateException e) {
