@@ -93,7 +93,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .compact();
         response.addHeader(HEADER_AUTHORIZATION, PREFIX_TOKEN + token);
         // Fetch domain user and map to response DTO
-        User domainUser = userRepositoryPort.findByEmail(username).get();
+        User domainUser = userRepositoryPort.findByEmail(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         UserResponseDTO userDto = UserMapperDtos.toResponseDto(domainUser);
 
         Map<String, Object> body = new HashMap<>();

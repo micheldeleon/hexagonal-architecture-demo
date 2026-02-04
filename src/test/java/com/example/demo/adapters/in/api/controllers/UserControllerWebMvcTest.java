@@ -35,6 +35,7 @@ import com.example.demo.core.ports.in.ListUsersPort;
 import com.example.demo.core.ports.in.RegisterUserPort;
 import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
+import com.example.demo.core.ports.in.ChangePasswordPort;
 import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,6 +67,10 @@ class UserControllerWebMvcTest {
     private GetAllTournamentsPort getAllTournamentsPort;
     @MockBean
     private GetTournamentPort getTournamentPort;
+    @MockBean
+    private ImageUploadService imageUploadService;
+    @MockBean
+    private ChangePasswordPort changePasswordPort;
 
     @Test
     void getAllUsers_returnsMappedList() throws Exception {

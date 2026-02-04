@@ -42,4 +42,12 @@ public interface TournamentRepositoryJpa extends JpaRepository<TournamentJpaEnti
         
         @Query("SELECT t FROM TournamentJpaEntity t ORDER BY t.createdAt DESC LIMIT 3")
         List<TournamentJpaEntity> findTop3ByOrderByCreatedAtDesc();
+
+        @Query("""
+                        SELECT t.organizerId, COUNT(t)
+                        FROM TournamentJpaEntity t
+                        WHERE t.organizerId IN :userIds
+                        GROUP BY t.organizerId
+                        """)
+        List<Object[]> countByOrganizerIds(@Param("userIds") List<Long> userIds);
 }

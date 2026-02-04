@@ -16,12 +16,15 @@ import com.example.demo.core.application.usecase.ListDisciplinesUseCase;
 import com.example.demo.core.application.usecase.ListFormatsByDisciplineUseCase;
 import com.example.demo.core.application.usecase.ListPublicTournamentsUseCase;
 import com.example.demo.core.application.usecase.ListTournamentsByStatusUseCase;
+import com.example.demo.core.application.usecase.ListUsersAdminUseCase;
 import com.example.demo.core.application.usecase.ListUsersUseCase;
 import com.example.demo.core.application.usecase.GenerateEliminationFixtureUseCase;
 import com.example.demo.core.application.usecase.GenerateLeagueFixtureUseCase;
 import com.example.demo.core.application.usecase.RegisterRunnerToTournamentUseCase;
 import com.example.demo.core.application.usecase.GetRaceResultsUseCase;
 import com.example.demo.core.application.usecase.ReportRaceResultsUseCase;
+import com.example.demo.core.application.usecase.DeactivateUserUseCase;
+import com.example.demo.core.application.usecase.RestoreUserUseCase;
 import com.example.demo.core.application.usecase.ToOrganizerUseCase;
 import com.example.demo.core.application.usecase.RegisterTeamToTournamentUseCase;
 import com.example.demo.core.application.usecase.RegisterToTournamentUseCase;
@@ -62,9 +65,12 @@ import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
 import com.example.demo.core.ports.in.GetUserByIdPort;
 import com.example.demo.core.ports.in.ListDisciplinesPort;
 import com.example.demo.core.ports.in.ListFormatsByDisciplinePort;
+import com.example.demo.core.ports.in.ListUsersAdminPort;
 import com.example.demo.core.ports.in.ListPublicTournamentsPort;
 import com.example.demo.core.ports.in.ListTournamentsByStatusPort;
 import com.example.demo.core.ports.in.ListUsersPort;
+import com.example.demo.core.ports.in.DeactivateUserPort;
+import com.example.demo.core.ports.in.RestoreUserPort;
 import com.example.demo.core.ports.in.RegisterRunnerToTournamentPort;
 import com.example.demo.core.ports.in.GenerateLeagueFixturePort;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
@@ -103,6 +109,7 @@ import com.example.demo.core.ports.out.NotificationPort;
 import com.example.demo.core.ports.out.TournamentRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
+import com.example.demo.core.ports.out.UserAdminReadPort;
 import com.example.demo.core.ports.out.TournamentCleanupPort;
 import com.example.demo.core.ports.out.ReputationRepositoryPort;
 import com.example.demo.core.ports.out.PostRepositoryPort;
@@ -120,6 +127,21 @@ public class ApplicationConfig {
     @Bean
     public ListUsersPort listUsersPort(UserRepositoryPort userRepositoryPort) {
         return new ListUsersUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public ListUsersAdminPort listUsersAdminPort(UserAdminReadPort userAdminReadPort) {
+        return new ListUsersAdminUseCase(userAdminReadPort);
+    }
+
+    @Bean
+    public DeactivateUserPort deactivateUserPort(UserRepositoryPort userRepositoryPort) {
+        return new DeactivateUserUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public RestoreUserPort restoreUserPort(UserRepositoryPort userRepositoryPort) {
+        return new RestoreUserUseCase(userRepositoryPort);
     }
 
     @Bean

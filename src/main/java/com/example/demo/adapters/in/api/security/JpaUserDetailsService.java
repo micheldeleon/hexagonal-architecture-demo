@@ -52,10 +52,12 @@ public UserDetails loadUserByUsername(String username) throws UsernameNotFoundEx
         })
         .collect(Collectors.toList());
 
+    boolean enabled = u.getDeletedAt() == null;
+
     return new org.springframework.security.core.userdetails.User(
         u.getEmail(),
         u.getPassword(),
-        true,
+        enabled,
         true, 
         true, 
         true,

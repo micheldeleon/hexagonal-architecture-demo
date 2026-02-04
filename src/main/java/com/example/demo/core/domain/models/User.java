@@ -1,5 +1,7 @@
 package com.example.demo.core.domain.models;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -19,12 +21,16 @@ public class User {
     private String email;
     private String password;
     private String googleSub;
+    private OffsetDateTime createdAt;
     private Date dateOfBirth; // fechaNacimiento
     private String nationalId; // ci
     private String phoneNumber; // celular
     private String address;
     private Department department;
     private String profileImageUrl; // URL de la imagen de perfil
+    private Instant deletedAt;
+    private Long deletedBy;
+    private String deleteReason;
     private List<Tournament> tournaments;
     private List<Registration> registrations;
 
@@ -70,6 +76,10 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.address = address;
         this.department = department;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 
 }

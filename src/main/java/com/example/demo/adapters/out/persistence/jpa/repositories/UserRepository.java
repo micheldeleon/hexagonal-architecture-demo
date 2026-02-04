@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Optional;
+import java.time.Instant;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +40,15 @@ public class UserRepository implements UserRepositoryPort {
     @Override
     @Transactional
     public List<User> findAll() {
+        Iterable<UserEntity> userEntities = userRepositoryJpa.findAllByDeletedAtIsNull();
+        List<User> users = new ArrayList<>();
+        userEntities.forEach(user -> users.add(UserMapper.toDomain(user)));
+        return users;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> findAllIncludingDeleted() {
         Iterable<UserEntity> userEntities = userRepositoryJpa.findAll();
         List<User> users = new ArrayList<>();
         userEntities.forEach(user -> users.add(UserMapper.toDomain(user)));
@@ -73,27 +83,43 @@ public class UserRepository implements UserRepositoryPort {
     @Override
     @Transactional(readOnly = true)
     public User findById(Long id) {
-        return UserMapper.toDomain(userRepositoryJpa.findById(id).get());
+        UserEntity entity = userRepositoryJpa.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return UserMapper.toDomain(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
-        return userRepositoryJpa.findByEmail(email)
+        return userRepositoryJpa.findByEmailAndDeletedAtIsNull(email)
                 .map(UserMapper::toDomain);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<User> findByGoogleSub(String googleSub) {
-        return userRepositoryJpa.findByGoogleSub(googleSub)
+        return userRepositoryJpa.findByGoogleSubAndDeletedAtIsNull(googleSub)
                 .map(UserMapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmailIncludingDeleted(String email) {
+        return userRepositoryJpa.findByEmail(email).map(UserMapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByIdIncludingDeleted(Long id) {
+        return userRepositoryJpa.findById(id)
+                .map(UserMapper::toDomain)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Override
     @Transactional
     public void update(User user) {
-        User lastUser = findByEmail(user.getEmail()).get();
+        User lastUser = findByEmail(user.getEmail()).orElseThrow(() -> new IllegalArgumentException("User not found"));
         lastUser.profileUpdate(user);
         List<RoleEntity> roles = userRepositoryJpa.findById(lastUser.getId()).get().getRoles();
         userRepositoryJpa.save(UserMapper.toEntity(lastUser, roles));
@@ -131,6 +157,34 @@ public class UserRepository implements UserRepositoryPort {
         if (!existing.equals(googleSub)) {
             throw new IllegalArgumentException("User already linked to a different Google account");
         }
+    }
+
+    @Override
+    @Transactional
+    public void deactivate(Long userId, Long adminUserId, String reason) {
+        UserEntity userEntity = userRepositoryJpa.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (userEntity.getDeletedAt() != null) {
+            throw new IllegalStateException("User already deactivated");
+        }
+        userEntity.setDeletedAt(Instant.now());
+        userEntity.setDeletedBy(adminUserId);
+        userEntity.setDeleteReason(reason);
+        userRepositoryJpa.save(userEntity);
+    }
+
+    @Override
+    @Transactional
+    public void restore(Long userId, Long adminUserId) {
+        UserEntity userEntity = userRepositoryJpa.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (userEntity.getDeletedAt() == null) {
+            return;
+        }
+        userEntity.setDeletedAt(null);
+        userEntity.setDeletedBy(null);
+        userEntity.setDeleteReason(null);
+        userRepositoryJpa.save(userEntity);
     }
     
 }

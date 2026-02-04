@@ -56,6 +56,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/login/google").permitAll()
                 
+                // ===== ADMIN =====
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                
                 // ===== USUARIOS - Reglas específicas primero =====
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/users/profile").permitAll()
@@ -128,7 +131,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/actuator/info").permitAll()
                 .anyRequest().authenticated())
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtUtil, userRepositoryPort))
-                .addFilterBefore(new JwtValidationFilter(authenticationManager(), jwtUtil),
+                .addFilterBefore(new JwtValidationFilter(authenticationManager(), jwtUtil, userRepositoryPort),
                         UsernamePasswordAuthenticationFilter.class)
                 .csrf(config -> config.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

@@ -10,6 +10,7 @@ public class UserMapper {
     public static UserEntity toEntity(User user, List<RoleEntity> roles) {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(user.getId());
+        userEntity.setCreatedAt(user.getCreatedAt());
         userEntity.setName(user.getName());
         userEntity.setLastName(user.getLastName());
         userEntity.setEmail(user.getEmail());
@@ -20,6 +21,9 @@ public class UserMapper {
         userEntity.setPhoneNumber(user.getPhoneNumber());
         userEntity.setAddress(user.getAddress());
         userEntity.setProfileImageUrl(user.getProfileImageUrl());
+        userEntity.setDeletedAt(user.getDeletedAt());
+        userEntity.setDeletedBy(user.getDeletedBy());
+        userEntity.setDeleteReason(user.getDeleteReason());
         userEntity.setDepartment(DepartmentMapper.toEntity(user.getDepartment()));
         userEntity.setRoles(roles);
         return userEntity;
@@ -28,6 +32,7 @@ public class UserMapper {
     public static User toDomain(UserEntity userEntity) {
         User user = new User();
         user.setId(userEntity.getId());
+        user.setCreatedAt(userEntity.getCreatedAt());
         user.setName(userEntity.getName());
         user.setLastName(userEntity.getLastName());
         user.setEmail(userEntity.getEmail());
@@ -38,6 +43,9 @@ public class UserMapper {
         user.setPhoneNumber(userEntity.getPhoneNumber());
         user.setAddress(userEntity.getAddress());
         user.setProfileImageUrl(userEntity.getProfileImageUrl());
+        user.setDeletedAt(userEntity.getDeletedAt());
+        user.setDeletedBy(userEntity.getDeletedBy());
+        user.setDeleteReason(userEntity.getDeleteReason());
         user.setDepartment(DepartmentMapper.toDomain(userEntity.getDepartment()));
         return user;
     }

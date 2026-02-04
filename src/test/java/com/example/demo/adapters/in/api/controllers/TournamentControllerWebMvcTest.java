@@ -45,6 +45,7 @@ import com.example.demo.core.ports.in.GenerateLeagueFixturePort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.GetFixturePort;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
+import com.example.demo.core.ports.in.GetLatestTournamentsPort;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
 import com.example.demo.core.ports.in.GetTournamentByIdPort;
 import com.example.demo.core.ports.in.ListPublicTournamentsPort;
@@ -57,6 +58,7 @@ import com.example.demo.core.ports.in.ReportLeagueMatchResultPort;
 import com.example.demo.core.ports.in.ReportMatchResultPort;
 import com.example.demo.core.ports.in.ReportRaceResultsPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
+import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 import com.example.demo.testsupport.TestDataFactory;
@@ -79,6 +81,8 @@ class TournamentControllerWebMvcTest {
     private GetAllTournamentsPort getAllTournamentsPort;
     @MockBean
     private GetTournamentByIdPort getTournamentByIdPort;
+    @MockBean
+    private GetLatestTournamentsPort getLatestTournamentsPort;
     @MockBean
     private ListPublicTournamentsPort listPublicTournamentsPort;
     @MockBean
@@ -107,6 +111,8 @@ class TournamentControllerWebMvcTest {
     private GetLeagueStandingsPort getLeagueStandingsPort;
     @MockBean
     private CancelTournamentPort cancelTournamentPort;
+    @MockBean
+    private FinalizeTournamentPort finalizeTournamentPort;
     @MockBean
     private StartTournamentPort startTournamentPort;
     @MockBean

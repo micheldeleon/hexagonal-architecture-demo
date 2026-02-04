@@ -15,6 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import com.example.demo.core.domain.models.User;
+import com.example.demo.core.ports.out.UserRepositoryPort;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -31,10 +34,12 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
     private static final String ERROR_BODY = "{\"message\":\"Token invalido o expirado\"}";
 
     private final JwtUtil jwtUtil;
+    private final UserRepositoryPort userRepositoryPort;
 
-    public JwtValidationFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public JwtValidationFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil, UserRepositoryPort userRepositoryPort) {
         super(authenticationManager);
         this.jwtUtil = jwtUtil;
+        this.userRepositoryPort = userRepositoryPort;
     }
 
     @Override
@@ -64,6 +69,11 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         }
 
         String username = claims.getSubject();
+        if (username != null && isUserRevoked(username)) {
+            SecurityContextHolder.clearContext();
+            handleInvalidToken(response);
+            return;
+        }
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UsernamePasswordAuthenticationToken authentication
                     = buildAuthentication(username, claims, request);
@@ -121,6 +131,15 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
                 = new UsernamePasswordAuthenticationToken(username, null, extractAuthorities(claims));
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         return authentication;
+    }
+
+    private boolean isUserRevoked(String email) {
+        if (userRepositoryPort == null) {
+            return false;
+        }
+        return userRepositoryPort.findByEmailIncludingDeleted(email)
+                .map(User::isDeleted)
+                .orElse(true);
     }
 
     private void handleInvalidToken(HttpServletResponse response) throws IOException {
