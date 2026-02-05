@@ -28,7 +28,7 @@ import com.example.demo.core.ports.in.GetUserByIdPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
 import com.example.demo.core.ports.in.ListUsersPort;
 import com.example.demo.core.ports.in.RegisterUserPort;
-import com.example.demo.core.ports.in.ToOrganizerPort;
+import com.example.demo.core.ports.in.RequestOrganizerRolePort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
 import com.example.demo.core.ports.in.GetAllTournamentsPort;
 import com.example.demo.core.ports.in.GetTournamentPort;
@@ -44,7 +44,7 @@ public class UserController {
     private final UpdateProfilePort updateProfilePort;
     private final GetUserByIdAndEmailPort getUserByIdAndEmailPort;
     private final GetUserByIdPort getUserByIdPort;
-    private final ToOrganizerPort toOrganizerPort;
+    private final RequestOrganizerRolePort requestOrganizerRolePort;
     private final GetAllTournamentsPort getAllTournamentsPort;
     private final GetTournamentPort getTournamentPort;
     private final ImageUploadService imageUploadService;
@@ -52,14 +52,14 @@ public class UserController {
     
     public UserController(ListUsersPort listUsersPort, RegisterUserPort registerUserPort,
             UpdateProfilePort updateProfilePort, GetUserByIdAndEmailPort getUserPort, GetUserByIdPort getUserByIdPort,
-            ToOrganizerPort toOrganizerPort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort,
+            RequestOrganizerRolePort requestOrganizerRolePort, GetAllTournamentsPort getAllTournamentsPort, GetTournamentPort getTournamentPort,
             ImageUploadService imageUploadService, ChangePasswordPort changePasswordPort) {
         this.listUsersPort = listUsersPort;
         this.registerUserPort = registerUserPort;
         this.updateProfilePort = updateProfilePort;
         this.getUserByIdAndEmailPort = getUserPort;
         this.getUserByIdPort = getUserByIdPort;
-        this.toOrganizerPort = toOrganizerPort;
+        this.requestOrganizerRolePort = requestOrganizerRolePort;
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentPort = getTournamentPort;
         this.imageUploadService = imageUploadService;
@@ -158,16 +158,35 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-     @PostMapping(value = "/organizer")
+      @PostMapping(value = "/organizer")
     public ResponseEntity<?> toOrganizer(
-            @RequestParam Long id) {
+             @RequestParam Long id,
+             org.springframework.security.core.Authentication authentication) {
         try {
-            toOrganizerPort.toOrganizer(id);
-            return ResponseEntity.ok("Exito");
+            if (authentication == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                        .body("Debe estar autenticado para solicitar ser organizador");
+            }
+
+            String userEmail = authentication.getName();
+            User user = getUserByIdPort.getUserById(id);
+            if (user == null) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            }
+            if (!user.getEmail().equals(userEmail)) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                        .body("Solo puedes solicitar ser organizador para tu propia cuenta");
+            }
+
+            var req = requestOrganizerRolePort.request(id, null);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Solicitud creada",
+                    "requestId", req.getId(),
+                    "status", req.getStatus().name()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-    }
+     }
     
     /**
      * Endpoint para subir imagen de perfil de usuario

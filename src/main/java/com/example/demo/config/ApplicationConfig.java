@@ -25,6 +25,10 @@ import com.example.demo.core.application.usecase.GetRaceResultsUseCase;
 import com.example.demo.core.application.usecase.ReportRaceResultsUseCase;
 import com.example.demo.core.application.usecase.DeactivateUserUseCase;
 import com.example.demo.core.application.usecase.RestoreUserUseCase;
+import com.example.demo.core.application.usecase.RequestOrganizerRoleUseCase;
+import com.example.demo.core.application.usecase.GetMyOrganizerRoleRequestUseCase;
+import com.example.demo.core.application.usecase.ListOrganizerRoleRequestsUseCase;
+import com.example.demo.core.application.usecase.ReviewOrganizerRoleRequestUseCase;
 import com.example.demo.core.application.usecase.ToOrganizerUseCase;
 import com.example.demo.core.application.usecase.RegisterTeamToTournamentUseCase;
 import com.example.demo.core.application.usecase.RegisterToTournamentUseCase;
@@ -71,6 +75,10 @@ import com.example.demo.core.ports.in.ListTournamentsByStatusPort;
 import com.example.demo.core.ports.in.ListUsersPort;
 import com.example.demo.core.ports.in.DeactivateUserPort;
 import com.example.demo.core.ports.in.RestoreUserPort;
+import com.example.demo.core.ports.in.RequestOrganizerRolePort;
+import com.example.demo.core.ports.in.GetMyOrganizerRoleRequestPort;
+import com.example.demo.core.ports.in.ListOrganizerRoleRequestsPort;
+import com.example.demo.core.ports.in.ReviewOrganizerRoleRequestPort;
 import com.example.demo.core.ports.in.RegisterRunnerToTournamentPort;
 import com.example.demo.core.ports.in.GenerateLeagueFixturePort;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
@@ -110,6 +118,7 @@ import com.example.demo.core.ports.out.TournamentRegistrationPort;
 import com.example.demo.core.ports.out.TournamentRepositoryPort;
 import com.example.demo.core.ports.out.UserRepositoryPort;
 import com.example.demo.core.ports.out.UserAdminReadPort;
+import com.example.demo.core.ports.out.OrganizerRoleRequestRepositoryPort;
 import com.example.demo.core.ports.out.TournamentCleanupPort;
 import com.example.demo.core.ports.out.ReputationRepositoryPort;
 import com.example.demo.core.ports.out.PostRepositoryPort;
@@ -142,6 +151,32 @@ public class ApplicationConfig {
     @Bean
     public RestoreUserPort restoreUserPort(UserRepositoryPort userRepositoryPort) {
         return new RestoreUserUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public RequestOrganizerRolePort requestOrganizerRolePort(
+            OrganizerRoleRequestRepositoryPort organizerRoleRequestRepositoryPort,
+            UserRepositoryPort userRepositoryPort) {
+        return new RequestOrganizerRoleUseCase(organizerRoleRequestRepositoryPort, userRepositoryPort);
+    }
+
+    @Bean
+    public GetMyOrganizerRoleRequestPort getMyOrganizerRoleRequestPort(
+            OrganizerRoleRequestRepositoryPort organizerRoleRequestRepositoryPort) {
+        return new GetMyOrganizerRoleRequestUseCase(organizerRoleRequestRepositoryPort);
+    }
+
+    @Bean
+    public ListOrganizerRoleRequestsPort listOrganizerRoleRequestsPort(
+            OrganizerRoleRequestRepositoryPort organizerRoleRequestRepositoryPort) {
+        return new ListOrganizerRoleRequestsUseCase(organizerRoleRequestRepositoryPort);
+    }
+
+    @Bean
+    public ReviewOrganizerRoleRequestPort reviewOrganizerRoleRequestPort(
+            OrganizerRoleRequestRepositoryPort organizerRoleRequestRepositoryPort,
+            UserRepositoryPort userRepositoryPort) {
+        return new ReviewOrganizerRoleRequestUseCase(organizerRoleRequestRepositoryPort, userRepositoryPort);
     }
 
     @Bean

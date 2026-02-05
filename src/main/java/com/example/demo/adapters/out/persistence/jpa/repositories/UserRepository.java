@@ -137,6 +137,16 @@ public class UserRepository implements UserRepositoryPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public boolean hasRole(Long userId, String roleName) {
+        UserEntity userEntity = userRepositoryJpa.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (userEntity.getRoles() == null) {
+            return false;
+        }
+        return userEntity.getRoles().stream().anyMatch(r -> roleName.equals(r.getName()));
+    }
+
+    @Override
     @Transactional
     public void linkGoogleSub(Long userId, String googleSub) {
         UserEntity userEntity = userRepositoryJpa.findById(userId)

@@ -103,7 +103,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         if (path.matches("/api/tournaments/\\d+/standings") && "GET".equals(method)) return true;
         if (path.matches("/api/tournaments/\\d+/register/team") && "POST".equals(method)) return true;
         if (path.startsWith("/api/tournaments") && "GET".equals(method)) return true;
-        if (path.startsWith("/api/users") && "GET".equals(method)) return true;
+        if (path.startsWith("/api/users") && "GET".equals(method) && !path.startsWith("/api/users/organizer-requests")) return true;
         
         return false;
     }

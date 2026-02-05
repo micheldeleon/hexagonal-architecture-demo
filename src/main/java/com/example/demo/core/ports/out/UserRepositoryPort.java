@@ -15,6 +15,7 @@ public interface UserRepositoryPort extends RepositoryPort<User, Long> {
 
     void update(User user);
     void addRole(Long userId, String roleName);
+    boolean hasRole(Long userId, String roleName);
     void linkGoogleSub(Long userId, String googleSub);
 
     void deactivate(Long userId, Long adminUserId, String reason);

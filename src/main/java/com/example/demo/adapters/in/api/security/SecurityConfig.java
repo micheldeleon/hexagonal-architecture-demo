@@ -63,6 +63,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/users/profile").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/organizer").hasRole("USER")
+                .requestMatchers(HttpMethod.POST, "/api/users/organizer-requests").hasRole("USER")
+                .requestMatchers(HttpMethod.GET, "/api/users/organizer-requests/me").hasRole("USER")
                 .requestMatchers(HttpMethod.POST, "/api/users/{id}/profile-image").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/users/by-id-and-email").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/tournaments").permitAll()

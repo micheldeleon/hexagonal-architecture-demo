@@ -32,8 +32,8 @@ import com.example.demo.core.ports.in.GetTournamentPort;
 import com.example.demo.core.ports.in.GetUserByIdAndEmailPort;
 import com.example.demo.core.ports.in.GetUserByIdPort;
 import com.example.demo.core.ports.in.ListUsersPort;
+import com.example.demo.core.ports.in.RequestOrganizerRolePort;
 import com.example.demo.core.ports.in.RegisterUserPort;
-import com.example.demo.core.ports.in.ToOrganizerPort;
 import com.example.demo.core.ports.in.UpdateProfilePort;
 import com.example.demo.core.ports.in.ChangePasswordPort;
 import com.example.demo.core.application.service.ImageUploadService;
@@ -62,7 +62,7 @@ class UserControllerWebMvcTest {
     @MockBean
     private GetUserByIdPort getUserByIdPort;
     @MockBean
-    private ToOrganizerPort toOrganizerPort;
+    private RequestOrganizerRolePort requestOrganizerRolePort;
     @MockBean
     private GetAllTournamentsPort getAllTournamentsPort;
     @MockBean
@@ -164,9 +164,28 @@ class UserControllerWebMvcTest {
 
     @Test
     void toOrganizer_callsPort() throws Exception {
-        mockMvc.perform(post("/api/users/organizer").param("id", "1"))
+        User user = TestDataFactory.validUser(1L);
+        user.setEmail("ana@example.com");
+        when(getUserByIdPort.getUserById(1L)).thenReturn(user);
+        when(requestOrganizerRolePort.request(1L, null)).thenReturn(
+                new com.example.demo.core.domain.models.OrganizerRoleRequest(
+                        99L,
+                        1L,
+                        com.example.demo.core.domain.models.OrganizerRoleRequestStatus.PENDING,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+        var auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("ana@example.com", "N/A");
+
+        mockMvc.perform(post("/api/users/organizer")
+                .principal(auth)
+                .param("id", "1"))
                 .andExpect(status().isOk());
-        verify(toOrganizerPort).toOrganizer(1L);
+        verify(requestOrganizerRolePort).request(1L, null);
     }
 }
 
