@@ -9,6 +9,7 @@ import java.util.Date;
 import com.example.demo.adapters.out.persistence.jpa.entities.DisciplineEntity;
 import com.example.demo.adapters.out.persistence.jpa.entities.TournamentJpaEntity;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.User;
 
@@ -53,6 +54,10 @@ public class TournamentMapper {
         e.setPrize(t.getPrize());
         e.setRegistrationCost(BigDecimal.valueOf(t.getRegistrationCost()));
         e.setStatus(t.getStatus() != null ? t.getStatus().name() : null);
+        e.setModerationStatus(t.getModerationStatus() != null ? t.getModerationStatus().name() : TournamentModerationStatus.ACTIVE.name());
+        e.setModeratedAt(toOdt(t.getModeratedAt()));
+        e.setModeratedByAdminId(t.getModeratedByAdminId());
+        e.setModerationReason(t.getModerationReason());
         e.setTeamsInscribed(t.getTeamsInscribed());
         e.setIsDoubleRound(t.getIsDoubleRound());
         e.setDetalles(t.getDetalles());
@@ -97,6 +102,14 @@ public class TournamentMapper {
         if (entity.getStatus() != null) {
             tournament.setStatus(TournamentStatus.valueOf(entity.getStatus()));
         }
+        if (entity.getModerationStatus() != null) {
+            tournament.setModerationStatus(TournamentModerationStatus.valueOf(entity.getModerationStatus()));
+        } else {
+            tournament.setModerationStatus(TournamentModerationStatus.ACTIVE);
+        }
+        tournament.setModeratedAt(fromOdt(entity.getModeratedAt()));
+        tournament.setModeratedByAdminId(entity.getModeratedByAdminId());
+        tournament.setModerationReason(entity.getModerationReason());
         tournament.setTeamsInscribed(
                 entity.getTeamsInscribed() != null ? entity.getTeamsInscribed() : 0);
         tournament.setIsDoubleRound(entity.getIsDoubleRound());

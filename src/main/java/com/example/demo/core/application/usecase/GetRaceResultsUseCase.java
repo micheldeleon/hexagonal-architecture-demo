@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.example.demo.core.domain.models.RaceResult;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 
 import com.example.demo.core.domain.models.Formats.RaceFormat;
 import com.example.demo.core.ports.in.GetRaceResultsPort;
@@ -29,6 +30,9 @@ public class GetRaceResultsUseCase implements GetRaceResultsPort {
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
         if (!(tournament.getFormat() instanceof RaceFormat)) {

@@ -32,6 +32,10 @@ public class Tournament { // Torneo
     private int minParticipantsPerTournament; // cantMinParticipantesXTorneo
     private int maxParticipantsPerTournament; // cantMaxParticipantesXTorneo
     private TournamentStatus status; // estado
+    private TournamentModerationStatus moderationStatus; // moderación/visibilidad (legal)
+    private Date moderatedAt; // fecha moderación
+    private Long moderatedByAdminId; // admin que moderó
+    private String moderationReason; // motivo
     private Boolean isDoubleRound; // Para formato liga: indica si es a doble ronda (ida y vuelta)
     private String detalles; // detalles del torneo con toda la información
     private String imageUrl; // URL de la imagen del torneo
@@ -40,6 +44,9 @@ public class Tournament { // Torneo
     public static Tournament create(Tournament t) {
         t.createdAt = new Date();
         t.status = TournamentStatus.ABIERTO;
+        if (t.moderationStatus == null) {
+            t.moderationStatus = TournamentModerationStatus.ACTIVE;
+        }
         t.validate();
         return t;
     }

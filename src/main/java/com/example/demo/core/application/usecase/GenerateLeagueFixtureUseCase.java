@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.example.demo.core.domain.models.Format;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.NotificationType;
@@ -40,6 +41,9 @@ public class GenerateLeagueFixtureUseCase implements GenerateLeagueFixturePort {
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
 

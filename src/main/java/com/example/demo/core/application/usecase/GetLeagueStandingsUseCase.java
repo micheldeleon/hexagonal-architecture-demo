@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.Formats.LeagueFormat;
 import com.example.demo.core.ports.in.GetLeagueStandingsPort;
 import com.example.demo.core.ports.in.models.LeagueStanding;
@@ -37,6 +38,9 @@ public class GetLeagueStandingsUseCase implements GetLeagueStandingsPort {
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
         if (!(tournament.getFormat() instanceof LeagueFormat leagueFormat)) {

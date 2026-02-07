@@ -218,6 +218,8 @@ public class TournamentController {
         try {
             Tournament tournament = getTournamentById.getTournamentById(id);
             return ResponseEntity.ok(TournamentMapper.toResponse(tournament));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

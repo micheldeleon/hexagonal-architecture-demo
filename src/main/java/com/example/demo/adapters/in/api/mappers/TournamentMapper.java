@@ -38,6 +38,10 @@ public class TournamentMapper {
                 r.minParticipantsPerTournament(), // minParticipantsPerTournament
                 r.maxParticipantsPerTournament(), // maxParticipantsPerTournament
                 null, // status
+                null, // moderationStatus (lo setea Tournament.create)
+                null, // moderatedAt
+                null, // moderatedByAdminId
+                null, // moderationReason
                 r.isDoubleRound(), // isDoubleRound
                 r.detalles(), // detalles
                 r.imageUrl() // imageUrl

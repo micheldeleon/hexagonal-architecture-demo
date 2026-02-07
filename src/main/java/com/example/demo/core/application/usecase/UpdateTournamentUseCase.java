@@ -3,6 +3,7 @@ package com.example.demo.core.application.usecase;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
@@ -30,6 +31,9 @@ public class UpdateTournamentUseCase implements UpdateTournamentPort {
         Tournament existingTournament = tournamentRepository.findById(tournament.getId());
         if (existingTournament == null) {
             throw new IllegalArgumentException("Tournament with id " + tournament.getId() + " not found");
+        }
+        if (existingTournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
+            throw new IllegalArgumentException("Torneo no encontrado");
         }
 
         // Validar que el torneo esté ABIERTO

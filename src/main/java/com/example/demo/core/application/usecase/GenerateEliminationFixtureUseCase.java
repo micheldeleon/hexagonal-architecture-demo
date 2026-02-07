@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.example.demo.core.domain.models.Format;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentMatch;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.NotificationType;
@@ -42,6 +43,9 @@ public class GenerateEliminationFixtureUseCase implements GenerateEliminationFix
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
 
@@ -90,6 +94,13 @@ public class GenerateEliminationFixtureUseCase implements GenerateEliminationFix
 
     @Override
     public List<TournamentMatch> getFixture(Long tournamentId) {
+        if (tournamentId == null) {
+            throw new IllegalArgumentException("tournamentId es requerido");
+        }
+        Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
+        if (tournament == null || tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
         return fixturePersistencePort.findByTournament(tournamentId);
     }
 

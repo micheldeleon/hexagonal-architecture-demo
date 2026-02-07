@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentMatch;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.LeagueFormat;
@@ -41,6 +42,9 @@ public class ReportLeagueMatchResultUseCase implements ReportLeagueMatchResultPo
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
         if (!(tournament.getFormat() instanceof LeagueFormat)) {

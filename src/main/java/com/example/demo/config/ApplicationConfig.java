@@ -47,6 +47,8 @@ import com.example.demo.core.application.usecase.CreateNotificationUseCase;
 import com.example.demo.core.application.usecase.RateOrganizerUseCase;
 import com.example.demo.core.application.usecase.GetOrganizerReputationUseCase;
 import com.example.demo.core.application.usecase.UpdateTournamentUseCase;
+import com.example.demo.core.application.usecase.AdminDeactivateTournamentUseCase;
+import com.example.demo.core.application.usecase.AdminReactivateTournamentUseCase;
 import com.example.demo.core.application.usecase.CreatePostUseCase;
 import com.example.demo.core.application.usecase.GetPostsUseCase;
 import com.example.demo.core.application.usecase.ClosePostUseCase;
@@ -97,6 +99,8 @@ import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.RateOrganizerPort;
 import com.example.demo.core.ports.in.GetOrganizerReputationPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
+import com.example.demo.core.ports.in.AdminDeactivateTournamentPort;
+import com.example.demo.core.ports.in.AdminReactivateTournamentPort;
 import com.example.demo.core.ports.in.CreatePostPort;
 import com.example.demo.core.ports.in.GetPostsPort;
 import com.example.demo.core.ports.in.ClosePostPort;
@@ -395,6 +399,22 @@ public class ApplicationConfig {
     @Bean
     public UpdateTournamentPort updateTournamentPort(TournamentRepositoryPort tournamentRepositoryPort, NotificationPort notificationPort) {
         return new UpdateTournamentUseCase(tournamentRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public AdminDeactivateTournamentPort adminDeactivateTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort) {
+        return new AdminDeactivateTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public AdminReactivateTournamentPort adminReactivateTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            UserRepositoryPort userRepositoryPort,
+            NotificationPort notificationPort) {
+        return new AdminReactivateTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
     }
 
     // ==================== BLOG SYSTEM BEANS ====================

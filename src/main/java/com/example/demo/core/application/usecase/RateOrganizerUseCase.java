@@ -1,6 +1,7 @@
 package com.example.demo.core.application.usecase;
 
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.User;
 import com.example.demo.core.domain.models.Organizer;
@@ -64,6 +65,9 @@ public class RateOrganizerUseCase implements RateOrganizerPort {
         // 5. Verificar que el torneo existe (cargar con equipos para verificar participación)
         Tournament tournament = tournamentRepositoryPort.findByIdWithTeams(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
 

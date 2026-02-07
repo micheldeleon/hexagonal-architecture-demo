@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.example.demo.adapters.in.api.dto.ParticipantRequest;
 import com.example.demo.core.domain.models.Tournament;
+import com.example.demo.core.domain.models.TournamentModerationStatus;
 import com.example.demo.core.domain.models.TournamentStatus;
 import com.example.demo.core.domain.models.NotificationType;
 import com.example.demo.core.domain.models.Formats.RaceFormat;
@@ -45,6 +46,9 @@ public class RegisterRunnerToTournamentUseCase implements RegisterRunnerToTourna
 
         Tournament tournament = tournamentRepositoryPort.findById(tournamentId);
         if (tournament == null) {
+            throw new IllegalArgumentException("Torneo no encontrado");
+        }
+        if (tournament.getModerationStatus() == TournamentModerationStatus.DEACTIVATED) {
             throw new IllegalArgumentException("Torneo no encontrado");
         }
         if (!(tournament.getFormat() instanceof RaceFormat)) {

@@ -14,6 +14,7 @@ public interface TournamentRepositoryJpa extends JpaRepository<TournamentJpaEnti
         @Query("""
                             SELECT t FROM TournamentJpaEntity t
                             WHERE (:status IS NULL OR t.status = :status)
+                              AND (t.moderationStatus IS NULL OR t.moderationStatus = 'ACTIVE')
                               AND (:disciplineId IS NULL OR t.discipline.id = :disciplineId)
                               AND (:namePattern = '' OR LOWER(t.name) LIKE :namePattern)
                               AND (:startFrom IS NULL OR t.startAt >= :startFrom)
@@ -38,9 +39,19 @@ public interface TournamentRepositoryJpa extends JpaRepository<TournamentJpaEnti
                         @Param("withPrize") Boolean withPrize,
                         @Param("withCost") Boolean withCost);
 
-        List<TournamentJpaEntity> findByStatus(String status);
+        @Query("""
+                        SELECT t FROM TournamentJpaEntity t
+                        WHERE t.status = :status
+                          AND (t.moderationStatus IS NULL OR t.moderationStatus = 'ACTIVE')
+                        """)
+        List<TournamentJpaEntity> findByStatus(@Param("status") String status);
         
-        @Query("SELECT t FROM TournamentJpaEntity t ORDER BY t.createdAt DESC LIMIT 3")
+        @Query("""
+                        SELECT t FROM TournamentJpaEntity t
+                        WHERE (t.moderationStatus IS NULL OR t.moderationStatus = 'ACTIVE')
+                        ORDER BY t.createdAt DESC
+                        LIMIT 3
+                        """)
         List<TournamentJpaEntity> findTop3ByOrderByCreatedAtDesc();
 
         @Query("""

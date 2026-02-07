@@ -82,6 +82,18 @@ public class TournamentJpaEntity {
   @Column(name = "status", nullable = false)
   private String status;
 
+  @Column(name = "moderation_status")
+  private String moderationStatus;
+
+  @Column(name = "moderated_at")
+  private OffsetDateTime moderatedAt;
+
+  @Column(name = "moderated_by_admin_id")
+  private Long moderatedByAdminId;
+
+  @Column(name = "moderation_reason", columnDefinition = "TEXT")
+  private String moderationReason;
+
   @Column(name = "teams_inscribed", nullable = false)
   private Integer teamsInscribed;
 
