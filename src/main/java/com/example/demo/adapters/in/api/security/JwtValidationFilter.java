@@ -93,6 +93,7 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
         if (path.equals("/api/users/profile") && "PUT".equals(method)) return true;
         if (path.equals("/api/users/by-id-and-email") && "GET".equals(method)) return true;
         if (path.equals("/api/mail/test") && "POST".equals(method)) return true;
+        if (path.equals("/api/contact") && "POST".equals(method)) return true;
         
         // Rutas con patrones
         if (path.startsWith("/api/disciplines") && "GET".equals(method)) return true;

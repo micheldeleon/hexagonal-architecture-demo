@@ -2,11 +2,13 @@ package com.example.demo.adapters.out.email;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.example.demo.core.ports.out.EmailSenderPort;
 
 @Component
+@ConditionalOnProperty(name = "mailjet.enabled", havingValue = "false", matchIfMissing = true)
 public class NoopEmailAdapter implements EmailSenderPort {
 
     private static final Logger log = LoggerFactory.getLogger(NoopEmailAdapter.class);

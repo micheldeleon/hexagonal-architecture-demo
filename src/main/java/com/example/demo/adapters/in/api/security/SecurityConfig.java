@@ -125,6 +125,9 @@ public class SecurityConfig {
                 
                 // ===== MAIL (Testing) =====
                 .requestMatchers(HttpMethod.POST, "/api/mail/test").permitAll()
+
+                // ===== CONTACTO =====
+                .requestMatchers(HttpMethod.POST, "/api/contact").permitAll()
                 
                 // Health checks
                 .requestMatchers(HttpMethod.GET, "/").permitAll()

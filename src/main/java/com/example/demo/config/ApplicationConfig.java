@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,6 +58,7 @@ import com.example.demo.core.application.usecase.CreateComentarioUseCase;
 import com.example.demo.core.application.usecase.GetComentariosUseCase;
 import com.example.demo.core.application.usecase.ContactarAvisoUseCase;
 import com.example.demo.core.application.usecase.GetContactosUseCase;
+import com.example.demo.core.application.usecase.SendContactMessageUseCase;
 import com.example.demo.core.application.service.NotificationSseService;
 import com.example.demo.core.ports.in.ChangePasswordPort;
 import com.example.demo.core.ports.in.CreateTournamentPort;
@@ -110,7 +112,9 @@ import com.example.demo.core.ports.in.CreateComentarioPort;
 import com.example.demo.core.ports.in.GetComentariosPort;
 import com.example.demo.core.ports.in.ContactarAvisoPort;
 import com.example.demo.core.ports.in.GetContactosPort;
+import com.example.demo.core.ports.in.SendContactMessagePort;
 import com.example.demo.core.ports.out.DisciplineRepositoryPort;
+import com.example.demo.core.ports.out.EmailSenderPort;
 import com.example.demo.core.ports.out.FindTournamentsByStatusPort;
 import com.example.demo.core.ports.out.FindTournamentsPort;
 import com.example.demo.core.ports.out.FormatRepositoryPort;
@@ -435,6 +439,13 @@ public class ApplicationConfig {
             UserRepositoryPort userRepositoryPort,
             NotificationPort notificationPort) {
         return new AdminReactivateTournamentUseCase(tournamentRepositoryPort, userRepositoryPort, notificationPort);
+    }
+
+    @Bean
+    public SendContactMessagePort sendContactMessagePort(
+            EmailSenderPort emailSenderPort,
+            @Value("${contact.to.email:gestiontorneosuy@gmail.com}") String toEmail) {
+        return new SendContactMessageUseCase(emailSenderPort, toEmail);
     }
 
     // ==================== BLOG SYSTEM BEANS ====================
