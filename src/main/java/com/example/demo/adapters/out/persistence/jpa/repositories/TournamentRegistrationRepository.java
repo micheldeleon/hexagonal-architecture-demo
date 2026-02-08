@@ -31,5 +31,10 @@ public class TournamentRegistrationRepository implements TournamentRegistrationP
     public boolean exists(Long tournamentId, Long userId) {
         return tournamentParticipantRepositoryJpa.existsByTournamentIdAndUserId(tournamentId, userId);
     }
+
+    @Override
+    public long unregister(Long tournamentId, Long userId) {
+        return tournamentParticipantRepositoryJpa.deleteByTournamentIdAndUserId(tournamentId, userId);
+    }
 }
 

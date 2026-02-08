@@ -14,6 +14,8 @@ public enum NotificationType {
     TOURNAMENT_REMINDER("Recordatorio de torneo"),
     TOURNAMENT_DEACTIVATED_BY_ADMIN("Torneo dado de baja por moderación"),
     TOURNAMENT_REACTIVATED_BY_ADMIN("Torneo reactivado por moderación"),
+    TOURNAMENT_LEFT("Salida del torneo"),
+    TEAM_WITHDRAWN("Equipo retirado del torneo"),
     GENERAL("Notificación general"),
     // Nuevos tipos para el blog
     NUEVO_COMENTARIO_POST("Nuevo comentario en tu publicación"),

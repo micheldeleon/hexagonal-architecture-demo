@@ -49,6 +49,7 @@ import com.example.demo.core.application.usecase.GetOrganizerReputationUseCase;
 import com.example.demo.core.application.usecase.UpdateTournamentUseCase;
 import com.example.demo.core.application.usecase.AdminDeactivateTournamentUseCase;
 import com.example.demo.core.application.usecase.AdminReactivateTournamentUseCase;
+import com.example.demo.core.application.usecase.LeaveTournamentUseCase;
 import com.example.demo.core.application.usecase.CreatePostUseCase;
 import com.example.demo.core.application.usecase.GetPostsUseCase;
 import com.example.demo.core.application.usecase.ClosePostUseCase;
@@ -101,6 +102,7 @@ import com.example.demo.core.ports.in.GetOrganizerReputationPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
 import com.example.demo.core.ports.in.AdminDeactivateTournamentPort;
 import com.example.demo.core.ports.in.AdminReactivateTournamentPort;
+import com.example.demo.core.ports.in.LeaveTournamentPort;
 import com.example.demo.core.ports.in.CreatePostPort;
 import com.example.demo.core.ports.in.GetPostsPort;
 import com.example.demo.core.ports.in.ClosePostPort;
@@ -114,6 +116,7 @@ import com.example.demo.core.ports.out.FindTournamentsPort;
 import com.example.demo.core.ports.out.FormatRepositoryPort;
 import com.example.demo.core.ports.out.FixturePersistencePort;
 import com.example.demo.core.ports.out.TeamQueryPort;
+import com.example.demo.core.ports.out.TeamCaptainQueryPort;
 import com.example.demo.core.ports.out.RaceResultPersistencePort;
 import com.example.demo.core.ports.out.TeamRegistrationPort;
 import com.example.demo.core.ports.out.TeamRemovalPort;
@@ -353,6 +356,23 @@ public class ApplicationConfig {
             NotificationPort notificationPort,
             NotificationSseService notificationSseService) {
         return new CreateNotificationUseCase(notificationPort, notificationSseService);
+    }
+
+    @Bean
+    public LeaveTournamentPort leaveTournamentPort(
+            TournamentRepositoryPort tournamentRepositoryPort,
+            UserRepositoryPort userRepositoryPort,
+            TournamentRegistrationPort tournamentRegistrationPort,
+            TeamCaptainQueryPort teamCaptainQueryPort,
+            TeamRemovalPort teamRemovalPort,
+            CreateNotificationPort createNotificationPort) {
+        return new LeaveTournamentUseCase(
+                tournamentRepositoryPort,
+                userRepositoryPort,
+                tournamentRegistrationPort,
+                teamCaptainQueryPort,
+                teamRemovalPort,
+                createNotificationPort);
     }
 
     @Bean

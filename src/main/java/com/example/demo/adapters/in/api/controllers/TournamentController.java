@@ -3,6 +3,7 @@ package com.example.demo.adapters.in.api.controllers;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,7 @@ import com.example.demo.adapters.in.api.dto.LeagueStandingResponse;
 import com.example.demo.adapters.in.api.dto.CancelTournamentResponse;
 import com.example.demo.adapters.in.api.dto.StartTournamentResponse;
 import com.example.demo.adapters.in.api.dto.TeamSummaryDto;
+import com.example.demo.adapters.in.api.dto.LeaveTournamentRequest;
 import com.example.demo.core.application.service.ImageUploadService;
 import com.example.demo.core.domain.models.Tournament;
 import com.example.demo.core.domain.models.TournamentStatus;
@@ -63,6 +65,7 @@ import com.example.demo.core.ports.in.CancelTournamentPort;
 import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
+import com.example.demo.core.ports.in.LeaveTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 
 import jakarta.validation.Valid;
@@ -95,6 +98,7 @@ public class TournamentController {
     private final TeamQueryPort teamQueryPort;
     private final ImageUploadService imageUploadService;
     private final UpdateTournamentPort updateTournamentPort;
+    private final LeaveTournamentPort leaveTournamentPort;
 
     public TournamentController(CreateTournamentPort createTournamentPort,
             GetAllTournamentsPort getAllTournamentsPort,
@@ -119,7 +123,8 @@ public class TournamentController {
             RemoveTeamFromTournamentPort removeTeamFromTournamentPort,
             TeamQueryPort teamQueryPort,
             ImageUploadService imageUploadService,
-            UpdateTournamentPort updateTournamentPort) {
+            UpdateTournamentPort updateTournamentPort,
+            LeaveTournamentPort leaveTournamentPort) {
         this.createTournamentPort = createTournamentPort;
         this.getAllTournamentsPort = getAllTournamentsPort;
         this.getTournamentById = getTournamentById;
@@ -144,6 +149,7 @@ public class TournamentController {
         this.teamQueryPort = teamQueryPort;
         this.imageUploadService = imageUploadService;
         this.updateTournamentPort = updateTournamentPort;
+        this.leaveTournamentPort = leaveTournamentPort;
     }
 
     @PostMapping("/organizer/{organizerId}")
@@ -420,6 +426,41 @@ public class TournamentController {
                             "teamName", request.teamName()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/leave")
+    public ResponseEntity<?> leaveTournament(
+            @PathVariable Long id,
+            Authentication authentication,
+            @RequestBody(required = false) LeaveTournamentRequest request) {
+        try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("leave_tournament: auth_missing id=" + id);
+            }
+
+            String userEmail = authentication.getName();
+            Long teamId = request != null ? request.teamId() : null;
+            String reason = request != null ? request.reason() : null;
+
+            var result = leaveTournamentPort.leave(id, userEmail, teamId, reason);
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("message", "Salida del torneo procesada");
+            body.put("tournamentId", result.tournamentId());
+            body.put("mode", result.mode().name());
+            if (result.teamId() != null) {
+                body.put("teamId", result.teamId());
+            }
+            return ResponseEntity.ok(body);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            if ("Torneo no encontrado".equals(e.getMessage())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

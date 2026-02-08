@@ -127,6 +127,23 @@ Objetivo: referencia rápida para Postman / Frontend (incluye “eliminar” leg
 - **Notas**:
   - Si el torneo está **desactivado por admin** ⇒ **404**.
 
+### Salir del torneo (participante)
+- **POST** `{{baseUrl}}/api/tournaments/{id}/leave`
+- **Auth**: authenticated
+- **Body** (opcional):
+```json
+{
+  "teamId": 123,
+  "reason": "No puedo participar"
+}
+```
+- **Notas**:
+  - Solo permitido si el torneo está **ABIERTO** y faltan **≥ 24h** para `startAt`.
+  - Si `registrationDeadline` ya pasó, no permite salir.
+  - El **organizador** de ese torneo no puede usar este endpoint (403).
+  - Si es capitán/creador de un equipo, al salir se retira el **equipo completo**.
+  - Si el torneo está **desactivado por admin** ⇒ **404**.
+
 ### Cancelar torneo (organizador) — destructivo
 - **POST** `{{baseUrl}}/api/tournaments/{id}/cancel`
 - **Auth**: authenticated (valida organizador en el use case)
@@ -258,4 +275,3 @@ Ejecutar el script:
 
 Esto agrega:
 - `moderation_status` + auditoría y backfill a `ACTIVE`.
-

@@ -60,6 +60,7 @@ import com.example.demo.core.ports.in.ReportRaceResultsPort;
 import com.example.demo.core.ports.in.StartTournamentPort;
 import com.example.demo.core.ports.in.FinalizeTournamentPort;
 import com.example.demo.core.ports.in.UpdateTournamentPort;
+import com.example.demo.core.ports.in.LeaveTournamentPort;
 import com.example.demo.core.ports.out.TeamQueryPort;
 import com.example.demo.testsupport.TestDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -123,6 +124,8 @@ class TournamentControllerWebMvcTest {
     private ImageUploadService imageUploadService;
     @MockBean
     private UpdateTournamentPort updateTournamentPort;
+    @MockBean
+    private LeaveTournamentPort leaveTournamentPort;
 
     @Test
     void create_returnsCreatedTournamentResponse() throws Exception {
@@ -361,6 +364,23 @@ class TournamentControllerWebMvcTest {
                 .andExpect(jsonPath("$.userEmail").value("runner@example.com"));
 
         verify(registerRunnerToTournamentPort).register(eq(10L), eq("runner@example.com"), eq(null));
+    }
+
+    @Test
+    void leaveTournament_delegatesToPort() throws Exception {
+        var auth = new UsernamePasswordAuthenticationToken("user@example.com", "N/A");
+        when(leaveTournamentPort.leave(10L, "user@example.com", null, null))
+                .thenReturn(new LeaveTournamentPort.LeaveTournamentResult(
+                        10L,
+                        LeaveTournamentPort.LeaveMode.INDIVIDUAL,
+                        null));
+
+        mockMvc.perform(post("/api/tournaments/10/leave").principal(auth))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tournamentId").value(10))
+                .andExpect(jsonPath("$.mode").value("INDIVIDUAL"));
+
+        verify(leaveTournamentPort).leave(10L, "user@example.com", null, null);
     }
 
     @Test

@@ -14,6 +14,8 @@ public interface TournamentParticipantRepositoryJpa extends JpaRepository<Tourna
 
     boolean existsByTournamentIdAndUserId(Long tournamentId, Long userId);
 
+    long deleteByTournamentIdAndUserId(Long tournamentId, Long userId);
+
     @Query("""
             SELECT tp.userId, COUNT(tp)
             FROM TournamentParticipantEntity tp
