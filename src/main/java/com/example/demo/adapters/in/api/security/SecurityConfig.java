@@ -118,6 +118,11 @@ public class SecurityConfig {
                 // ===== NOTIFICACIONES =====
                 .requestMatchers(HttpMethod.POST, "/api/notifications/create").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/notifications/stream").authenticated()
+
+                // ===== BLOG =====
+                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/comentarios/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/contactos/**").permitAll()
                 
                 // ===== REPUTACIA"N =====
                 .requestMatchers(HttpMethod.POST, "/api/organizers/{id}/rate").permitAll()
