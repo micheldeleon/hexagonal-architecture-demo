@@ -1,0 +1,40 @@
+package com.tutorneo.adapters.out.persistence.jpa.repositories;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
+import org.springframework.stereotype.Component;
+
+import com.tutorneo.adapters.out.persistence.jpa.entities.TournamentParticipantEntity;
+import com.tutorneo.adapters.out.persistence.jpa.interfaces.TournamentParticipantRepositoryJpa;
+import com.tutorneo.core.ports.out.TournamentRegistrationPort;
+
+@Component
+public class TournamentRegistrationRepository implements TournamentRegistrationPort {
+
+    private final TournamentParticipantRepositoryJpa tournamentParticipantRepositoryJpa;
+
+    public TournamentRegistrationRepository(TournamentParticipantRepositoryJpa tournamentParticipantRepositoryJpa) {
+        this.tournamentParticipantRepositoryJpa = tournamentParticipantRepositoryJpa;
+    }
+
+    @Override
+    public void register(Long tournamentId, Long userId) {
+        TournamentParticipantEntity entity = new TournamentParticipantEntity();
+        entity.setTournamentId(tournamentId);
+        entity.setUserId(userId);
+        entity.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        tournamentParticipantRepositoryJpa.save(entity);
+    }
+
+    @Override
+    public boolean exists(Long tournamentId, Long userId) {
+        return tournamentParticipantRepositoryJpa.existsByTournamentIdAndUserId(tournamentId, userId);
+    }
+
+    @Override
+    public long unregister(Long tournamentId, Long userId) {
+        return tournamentParticipantRepositoryJpa.deleteByTournamentIdAndUserId(tournamentId, userId);
+    }
+}
+

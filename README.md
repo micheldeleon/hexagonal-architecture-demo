@@ -103,7 +103,7 @@ credenciales externas:
 ./mvnw clean verify
 ```
 
-El JAR resultante queda en `target/demo-0.0.1-SNAPSHOT.jar`.
+El JAR resultante queda en `target/tutorneo-0.0.1-SNAPSHOT.jar`.
 
 ## Docker
 

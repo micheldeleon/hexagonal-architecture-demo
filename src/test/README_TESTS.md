@@ -18,7 +18,7 @@ Este README documenta todos los tests agregados y el motivo de cada uno. El obje
   - Fabrica de datos reutilizables para usuarios, torneos y equipos con valores validos.
 
 ## Smoke test existente
-- `src/test/java/com/example/demo/DemoApplicationTests.java`
+- `src/test/java/com/example/demo/TuTorneoApplicationTests.java`
   - Verifica que el contexto de Spring levanta. Se mantiene como smoke test.
 
 ## Config
