@@ -1,3 +1,4 @@
+-- LEGACY REFERENCE ONLY. Flyway owns the schema; do not run manually.
 -- Script para agregar el tipo de notificación WELCOME al constraint
 -- Ejecutar este script en la base de datos PostgreSQL
 

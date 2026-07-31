@@ -76,9 +76,8 @@ Variables principales:
 | `MAILJET_SECRETKEY` | Secret key de Mailjet |
 | `CONTACT_TO_EMAIL` | Destino del formulario de contacto |
 
-`MAILJET_APIKET` se conserva temporalmente en `.env.example` por compatibilidad
-con una clave histórica mal escrita. La aplicación debe migrarse a
-`MAILJET_APIKEY`.
+La clave de Mailjet debe llamarse `MAILJET_APIKEY`; la variante histórica
+`MAILJET_APIKET` ya no es compatible.
 
 ## Ejecutar
 
@@ -115,22 +114,21 @@ docker build -t gestion-torneos-api .
 docker run --env-file .env -p 8080:8080 gestion-torneos-api
 ```
 
+El despliegue automatizado en mini PC con Docker, GHCR, Cloudflare Tunnel y
+rollback está documentado en
+[`docs/deployment/mini-pc.md`](docs/deployment/mini-pc.md).
+
 ## Base de datos
 
-Actualmente Hibernate usa `spring.jpa.hibernate.ddl-auto=update` y los cambios
-históricos de esquema están documentados como scripts SQL en la raíz. Antes de
-usar una nueva base o desplegar a producción, revisar esos scripts y hacer un
-respaldo.
+Flyway administra los cambios de esquema desde
+`src/main/resources/db/migration`. Hibernate usa
+`spring.jpa.hibernate.ddl-auto=validate`, por lo que valida el mapeo sin
+modificar la base. Las bases existentes se adoptan en la versión 0 y reciben
+las migraciones pendientes automáticamente.
 
-Una mejora pendiente es consolidar el esquema en migraciones versionadas con
-Flyway o Liquibase y cambiar Hibernate a `ddl-auto=validate`.
+Para todo cambio futuro de esquema, agregar una migración inmutable siguiendo
+el formato `V<n>__descripcion.sql`. No editar migraciones ya aplicadas.
 
 ## Documentación adicional
 
-- `API_ENDPOINTS_TOURNAMENTS_POSTMAN.md`
-- `API_ENDPOINTS_CONTACT_POSTMAN.md`
-- `NOTIFICATIONS_README.md`
-- `NOTIFICACIONES_SSE_FRONTEND.md`
-- `REPUTATION_SYSTEM_FRONTEND_GUIDE.md`
-- `BLOG_SYSTEM_README.md`
-- `src/test/README_TESTS.md`
+Consultar el [índice de documentación](docs/README.md).

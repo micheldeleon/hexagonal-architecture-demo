@@ -1,3 +1,4 @@
+-- LEGACY REFERENCE ONLY. Flyway owns the schema; do not run manually.
 -- Migración para crear la tabla de notificaciones
 
 CREATE TABLE notifications (

@@ -1,3 +1,4 @@
+-- LEGACY REFERENCE ONLY. Flyway owns the schema; do not run manually.
 -- Soft delete support for users (logical deletion)
 -- Keeps email unique (deleted users remain blocked)
 

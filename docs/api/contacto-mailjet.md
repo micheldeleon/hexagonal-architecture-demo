@@ -13,7 +13,7 @@ El backend usa el port `EmailSenderPort` con adapter Mailjet cuando `MAILJET_ENA
 Variables en `.env` / entorno:
 
 - `MAILJET_ENABLED=true`
-- `MAILJET_APIKEY=...` *(o `MAILJET_APIKET=...` si ya lo venias usando)*
+- `MAILJET_APIKEY=...`
 - `MAILJET_SECRETKEY=...`
 - `CONTACT_TO_EMAIL=gestiontorneosuy@gmail.com` *(opcional; por defecto ya es ese)*
 

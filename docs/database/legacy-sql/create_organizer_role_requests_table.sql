@@ -1,3 +1,4 @@
+-- LEGACY REFERENCE ONLY. Flyway owns the schema; do not run manually.
 -- Requests for granting ROLE_ORGANIZER, reviewed by admins
 
 CREATE TABLE IF NOT EXISTS organizer_role_requests (
@@ -15,4 +16,3 @@ CREATE TABLE IF NOT EXISTS organizer_role_requests (
 CREATE INDEX IF NOT EXISTS idx_organizer_role_requests_user_id ON organizer_role_requests (user_id);
 CREATE INDEX IF NOT EXISTS idx_organizer_role_requests_status ON organizer_role_requests (status);
 CREATE INDEX IF NOT EXISTS idx_organizer_role_requests_created_at ON organizer_role_requests (created_at);
-

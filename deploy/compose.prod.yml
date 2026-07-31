@@ -1,0 +1,54 @@
+name: tutorneo
+
+services:
+  api:
+    image: ${IMAGE_REF:?IMAGE_REF is required}
+    container_name: tutorneo-api
+    restart: unless-stopped
+    env_file:
+      - ${APP_ENV_FILE:-/opt/tutorneo/secrets/app.env}
+    environment:
+      PORT: "8080"
+    ports:
+      - "127.0.0.1:18080:8080"
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ': > /dev/tcp/127.0.0.1/8080'"]
+      interval: 15s
+      timeout: 3s
+      retries: 4
+      start_period: 45s
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    cpus: 1.5
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.7.2
+    container_name: tutorneo-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --loglevel info run
+    env_file:
+      - ${CLOUDFLARED_ENV_FILE:-/opt/tutorneo/secrets/cloudflared.env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - edge
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  edge:
+    name: tutorneo-edge

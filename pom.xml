@@ -43,6 +43,15 @@
         <artifactId>postgresql</artifactId>
         <scope>runtime</scope>
     </dependency>
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId>
+        <scope>runtime</scope>
+    </dependency>
 
     <!-- Validation API (often used in controllers/DTOs) -->
     <dependency>
@@ -97,13 +106,6 @@
 		<version>0.13.0</version>
 		<scope>runtime</scope>
 	</dependency>
-    <!-- Auto-load .env into Spring Environment -->
-    <dependency>
-        <groupId>me.paulschwarz</groupId>
-        <artifactId>spring-dotenv</artifactId>
-        <version>4.0.0</version>
-    </dependency>
-
   <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt</artifactId>

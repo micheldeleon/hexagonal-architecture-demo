@@ -165,6 +165,5 @@ Guardar el token del usuario participante en `{{jwt_user}}` y el del organizador
 ---
 
 ## Documentación actualizada
-- `API_ENDPOINTS_TOURNAMENTS_POSTMAN.md` incluye `/leave`.
-- `TOURNAMENT_LEAVE_FLOW.md` describe el diseño y consideraciones.
-
+- [`docs/api/torneos.md`](../api/torneos.md) incluye `/leave`.
+- Este informe describe el diseño y sus consideraciones.

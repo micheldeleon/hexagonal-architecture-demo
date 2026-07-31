@@ -1,3 +1,4 @@
+-- LEGACY REFERENCE ONLY. Flyway owns the schema; do not run manually.
 -- Script para agregar la columna 'detalles' a la tabla tournaments
 -- Ejecutar este script si Hibernate no crea automáticamente la columna
 
