@@ -1,4 +1,4 @@
-# Despliegue en mini PC
+# Despliegue en servidor
 
 La API y `cloudflared` se ejecutan con Docker Compose. La API no publica ningún
 puerto en la red local: el puerto de diagnóstico queda ligado exclusivamente a
@@ -11,7 +11,7 @@ Después de completar esta guía:
 - cada push o merge a `main` ejecuta tests y construye una imagen;
 - GitHub publica la imagen en GHCR identificada por digest;
 - el job `production` entra por Cloudflare Access y un SSH restringido;
-- la mini PC descarga la imagen, ejecuta Flyway y verifica el health check;
+- el servidor descarga la imagen, ejecuta Flyway y verifica el health check;
 - ante un fallo, la aplicación vuelve automáticamente a la imagen anterior;
 - ni PostgreSQL, ni SSH, ni el puerto 8080 quedan abiertos en el router.
 
@@ -20,7 +20,7 @@ hasta definir `PRODUCTION_ENABLED=true`.
 
 ## 1. Requisitos previos
 
-- Mini PC x86-64 o ARM64 con una distribución Linux mantenida.
+- Servidor x86-64 o ARM64 con una distribución Linux mantenida.
 - Dominio administrado por Cloudflare.
 - Repositorio GitHub con Actions habilitado.
 - Acceso administrativo inicial por consola o red local.
@@ -62,7 +62,7 @@ eso la clave de CI se restringe posteriormente a un solo comando.
 
 ## 3. Provisionar los artefactos
 
-Desde una copia confiable del repositorio en la mini PC, ejecutar:
+Desde una copia confiable del repositorio en el servidor, ejecutar:
 
 Provisionar los artefactos como archivos propiedad de `root`, para que la clave
 de CI no pueda modificarlos:
@@ -86,7 +86,7 @@ sudo -u deploy bash -n /opt/tutorneo/ssh-deploy-gate.sh
 
 ## 4. Crear los secretos de aplicación
 
-Crear los secretos directamente en la mini PC:
+Crear los secretos directamente en el servidor:
 
 ```bash
 sudo install -o root -g deploy -m 0640 deploy/app.env.example \
@@ -122,7 +122,7 @@ ssh-keygen -t ed25519 -a 100 -f github-actions-production \
 ```
 
 La clave privada se guardará posteriormente en GitHub. Copiar la clave pública
-a la mini PC y agregarla a `/home/deploy/.ssh/authorized_keys` con estas
+al servidor y agregarla a `/home/deploy/.ssh/authorized_keys` con estas
 restricciones en una única línea:
 
 ```text
@@ -148,14 +148,14 @@ un token con permiso mínimo `read:packages`:
 docker login ghcr.io
 ```
 
-La mini PC también necesita `curl`, utilizado por el health check con rollback.
+El servidor también necesita `curl`, utilizado por el health check con rollback.
 
 ## 6. Crear el túnel Cloudflare
 
 En Cloudflare Zero Trust:
 
 1. Ir a **Networks → Tunnels**.
-2. Crear un túnel administrado remotamente llamado `tutorneo-mini-pc`.
+2. Crear un túnel administrado remotamente llamado `tutorneo-servidor`.
 3. Elegir Docker como entorno.
 4. Copiar solamente el token `eyJ...`.
 5. Guardarlo en:
@@ -194,7 +194,7 @@ desde una estación administrativa:
 cloudflared access ssh --hostname ssh.example.com
 ```
 
-En la mini PC, obtener la clave pública del host:
+En el servidor, obtener la clave pública del host:
 
 ```bash
 sudo cat /etc/ssh/ssh_host_ed25519_key.pub
@@ -242,7 +242,7 @@ Configurar también:
 
 Mantener inicialmente `PRODUCTION_ENABLED=false`.
 
-## 9. Preflight en la mini PC
+## 9. Preflight en el servidor
 
 Validar archivos y acceso a secretos sin imprimirlos:
 
@@ -285,7 +285,7 @@ restringido.
 
 ## 11. Validación posterior
 
-En la mini PC:
+En el servidor:
 
 ```bash
 docker compose -f /opt/tutorneo/compose.prod.yml ps
@@ -340,7 +340,7 @@ Operaciones periódicas:
 - [ ] Docker y Compose instalados.
 - [ ] Usuario `deploy` creado y limitado por forced command.
 - [ ] Artefactos en `/opt/tutorneo` propiedad de root.
-- [ ] Secretos rotados y guardados sólo en la mini PC.
+- [ ] Secretos rotados y guardados sólo en el servidor.
 - [ ] Login de sólo lectura en GHCR configurado.
 - [ ] Túnel Cloudflare conectado.
 - [ ] Rutas HTTP y SSH configuradas.

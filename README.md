@@ -114,9 +114,9 @@ docker build -t gestion-torneos-api .
 docker run --env-file .env -p 8080:8080 gestion-torneos-api
 ```
 
-El despliegue automatizado en mini PC con Docker, GHCR, Cloudflare Tunnel y
+El despliegue automatizado en servidor con Docker, GHCR, Cloudflare Tunnel y
 rollback está documentado en
-[`docs/deployment/mini-pc.md`](docs/deployment/mini-pc.md).
+[`docs/deployment/servidor.md`](docs/deployment/servidor.md).
 
 ## Base de datos
 

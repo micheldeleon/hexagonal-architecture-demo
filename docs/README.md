@@ -14,7 +14,7 @@
 
 ## Operaciones
 
-- [Despliegue seguro en mini PC](deployment/mini-pc.md)
+- [Despliegue seguro en servidor](deployment/servidor.md)
 - [Administración de base de datos](database/README.md)
 - [Suite de tests](testing/tests.md)
 
